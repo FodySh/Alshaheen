@@ -6,6 +6,9 @@ import { ProfileForm } from "@/components/account/ProfileForm";
 import { StatusBadge } from "@/components/StatusBadge";
 import { isStaff, requireUser } from "@/lib/auth";
 import {
+  CONTRACT_KIND_LABEL,
+  CONTRACT_STATUS_LABEL,
+  CONTRACT_TONE,
   BOOKING_STATUS_LABEL,
   BOOKING_TONE,
   COMPLAINT_STATUS_LABEL,
@@ -19,7 +22,7 @@ import {
 } from "@/lib/constants";
 import { formatDate, formatDay, formatTime, requestClock } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
-import type { Booking, Complaint, Inquiry, MarketingRequest } from "@/lib/types";
+import type { Booking, Complaint, ContractRequest, Inquiry, MarketingRequest } from "@/lib/types";
 
 export const metadata: Metadata = { title: "حسابي" };
 
@@ -52,7 +55,7 @@ function Empty({ children }: { children: React.ReactNode }) {
 async function Account() {
   const user = await requireUser("/account");
   const supabase = await createClient();
-  const [req, inq, bk, cmp] = await Promise.all([
+  const [req, inq, bk, cmp, ctr] = await Promise.all([
     supabase
       .from("marketing_requests")
       .select("id, ref_no, property_type, purpose, district, status, created_at")
@@ -76,7 +79,13 @@ async function Account() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(20),
+    supabase
+      .from("contract_requests")
+      .select("id, ref_no, contract_kind, is_renewal, district, status, contract_end_date, created_at")
+      .eq("submitter_id", user.id)
+      .order("created_at", { ascending: false }),
   ]);
+  const contracts = (ctr.data ?? []) as Pick<ContractRequest, "id" | "ref_no" | "contract_kind" | "is_renewal" | "district" | "status" | "contract_end_date" | "created_at">[];
 
   const requests = (req.data ?? []) as Pick<MarketingRequest, "id" | "ref_no" | "property_type" | "purpose" | "district" | "status" | "created_at">[];
   const inquiries = (inq.data ?? []) as unknown as (Inquiry & { listings: { title: string } | null })[];
@@ -114,6 +123,29 @@ async function Account() {
                   <span className="ms-auto flex items-center gap-3">
                     <span className="text-sm text-ink-soft">{formatDate(r.created_at)}</span>
                     <StatusBadge tone={REQUEST_TONE[r.status]}>{REQUEST_STATUS_LABEL[r.status]}</StatusBadge>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Block>
+
+      <Block id="contracts" title="توثيق عقود الإيجار" action={<Link href="/contracts" className="btn btn-secondary btn-sm">طلب توثيق</Link>}>
+        {contracts.length === 0 ? (
+          <Empty>لا توجد طلبات توثيق. نوثّق عقدك في منصة إيجار سواء كنت المالك أو المستأجر.</Empty>
+        ) : (
+          <ul className="panel divide-y divide-sand">
+            {contracts.map((c) => (
+              <li key={c.id}>
+                <Link href={`/account/contracts/${c.id}`} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-[#fdfcf9]">
+                  <span className="num text-sm text-ink-soft" dir="ltr">#{c.ref_no}</span>
+                  <span className="font-medium">
+                    عقد {CONTRACT_KIND_LABEL[c.contract_kind]}{c.is_renewal ? " (تجديد)" : ""} في {c.district}
+                  </span>
+                  <span className="ms-auto flex items-center gap-3">
+                    <span className="text-sm text-ink-soft">{formatDate(c.created_at)}</span>
+                    <StatusBadge tone={CONTRACT_TONE[c.status]}>{CONTRACT_STATUS_LABEL[c.status]}</StatusBadge>
                   </span>
                 </Link>
               </li>

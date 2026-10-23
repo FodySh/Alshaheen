@@ -17,18 +17,21 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const supabase = await createClient();
 
   const reqQuery = supabase.from("marketing_requests").select("id", { count: "exact", head: true });
-  const [{ count: newRequests }, { count: newInquiries }, { count: newComplaints }] = await Promise.all([
+  const ctrQuery = supabase.from("contract_requests").select("id", { count: "exact", head: true });
+  const [{ count: newRequests }, { count: newInquiries }, { count: newComplaints }, { count: openContracts }] = await Promise.all([
     admin ? reqQuery.eq("status", "new") : reqQuery.eq("assigned_to", user.id).in("status", ["under_review", "awaiting_license"]),
     supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("status", "new"),
     admin
       ? supabase.from("complaints").select("id", { count: "exact", head: true }).eq("status", "new")
       : Promise.resolve({ count: 0 }),
+    admin ? ctrQuery.eq("status", "new") : ctrQuery.eq("assigned_to", user.id).in("status", ["new", "contacted", "awaiting_data", "sent_to_ejar"]),
   ]);
 
   const items: NavItem[] = [
     { href: "/dashboard", label: "نظرة عامة" },
     { href: "/dashboard/requests", label: "طلبات التسويق", count: newRequests ?? 0 },
     { href: "/dashboard/listings", label: "العروض" },
+    { href: "/dashboard/contracts", label: "عقود الإيجار", count: openContracts ?? 0 },
     { href: "/dashboard/inquiries", label: "الاستفسارات", count: newInquiries ?? 0 },
     { href: "/dashboard/bookings", label: "المعاينات" },
     { href: "/dashboard/availability", label: "مواعيدي المتاحة" },

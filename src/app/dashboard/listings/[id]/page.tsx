@@ -5,6 +5,7 @@ import { ListingEditor } from "@/components/dashboard/ListingEditor";
 import { ConfirmForm } from "@/components/forms/ConfirmForm";
 import { SubmitButton } from "@/components/forms/SubmitButton";
 import { StatusBadge } from "@/components/StatusBadge";
+import { createContractFromListing } from "@/lib/actions/contracts";
 import { deleteListing, setListingStatus } from "@/lib/actions/staff";
 import { isAdmin, requireStaff } from "@/lib/auth";
 import { LISTING_STATUS_LABEL, LISTING_TONE } from "@/lib/constants";
@@ -37,6 +38,13 @@ export default async function EditListingPage({
   ]);
   if (!data) notFound();
   const l = data as Listing;
+  const { data: contract } = await supabase
+    .from("contract_requests")
+    .select("id, ref_no")
+    .eq("listing_id", l.id)
+    .neq("status", "cancelled")
+    .limit(1)
+    .maybeSingle();
   const canEdit = admin || l.agent_id === user.id;
   const expired = l.status === "published" && l.ad_license_expiry && daysUntil(l.ad_license_expiry) < 0;
 
@@ -58,6 +66,9 @@ export default async function EditListingPage({
         )}
       </div>
 
+      {sp.error === "contract" && (
+        <p role="alert" className="mb-4 rounded-md bg-danger-tint px-4 py-3 text-sm text-danger">تعذّر إنشاء طلب توثيق العقد. تأكد أن العرض مسند إليك وأنه للإيجار.</p>
+      )}
       {sp.created === "1" && (
         <p role="status" className="mb-4 rounded-md bg-olive-tint px-4 py-3 text-sm text-olive-deep">
           أُنشئت المسودة. راجع البيانات والصور، ثم أدخل رقم ترخيص الإعلان وانشر.
@@ -73,6 +84,25 @@ export default async function EditListingPage({
         <div className="grid gap-6">
           <ImageManager listingId={l.id} images={(imgs ?? []) as ListingImage[]} />
           <ListingEditor listing={l} staff={(staff ?? []) as { id: string; full_name: string }[]} isAdmin={admin} today={riyadhToday()} currentUserId={user.id} districts={await getDistricts()} />
+
+          {l.purpose === "rent" && (l.status === "rented" || l.status === "published") && (
+            <section className="panel flex flex-wrap items-center gap-4 p-5">
+              <div className="min-w-0 flex-1">
+                <h2 className="font-semibold">توثيق عقد الإيجار</h2>
+                <p className="mt-1 text-sm text-ink-soft">
+                  {contract ? "يوجد طلب توثيق مرتبط بهذا العرض." : "أنشئ طلب توثيق في إيجار ببيانات العرض والمالك، ثم أكمل بيانات المستأجر."}
+                </p>
+              </div>
+              {contract ? (
+                <Link href={`/dashboard/contracts/${contract.id}`} className="btn btn-secondary">افتح الطلب <span className="num" dir="ltr">#{contract.ref_no}</span></Link>
+              ) : (
+                <form action={createContractFromListing}>
+                  <input type="hidden" name="listing_id" value={l.id} />
+                  <SubmitButton className="btn btn-primary" pendingLabel="جارٍ الإنشاء…">أنشئ طلب توثيق</SubmitButton>
+                </form>
+              )}
+            </section>
+          )}
 
           <section className="panel p-5">
             <h2 className="font-semibold">إغلاق العرض</h2>

@@ -14,6 +14,7 @@ export const DEFAULT_SETTINGS: OfficeSettings = {
   email: null,
   address: "جدة، المملكة العربية السعودية",
   about: null,
+  contract_service_fee: null,
 };
 
 export async function getOfficeSettings(): Promise<OfficeSettings> {
@@ -23,7 +24,7 @@ export async function getOfficeSettings(): Promise<OfficeSettings> {
   if (!isSupabaseConfigured()) return DEFAULT_SETTINGS;
   const { data, error } = await createPublicClient()
     .from("office_settings")
-    .select("office_name, fal_license_number, cr_number, phone, whatsapp, email, address, about")
+    .select("office_name, fal_license_number, cr_number, phone, whatsapp, email, address, about, contract_service_fee")
     .eq("id", 1)
     .maybeSingle();
   if (error || !data) return DEFAULT_SETTINGS;

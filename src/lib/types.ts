@@ -43,6 +43,7 @@ export type OfficeSettings = {
   email: string | null;
   address: string | null;
   about: string | null;
+  contract_service_fee: string | null;
 };
 
 export type PropertyFields = {
@@ -170,6 +171,50 @@ export type Complaint = {
   status: ComplaintStatus;
   response: string | null;
   resolved_at: string | null;
+  created_at: string;
+};
+
+export type ContractParty = "landlord" | "landlord_agent" | "tenant";
+export type ContractKind = "residential" | "commercial";
+export type PaymentFrequency = "monthly" | "quarterly" | "semiannual" | "annual";
+export type ContractStatus = "new" | "contacted" | "awaiting_data" | "sent_to_ejar" | "documented" | "cancelled";
+
+export type ContractRequest = {
+  id: string;
+  ref_no: number;
+  submitter_id: string;
+  requester_role: ContractParty;
+  contract_kind: ContractKind;
+  is_renewal: boolean;
+  property_type: PropertyType;
+  district: string;
+  deed_number: string | null;
+  unit_details: string | null;
+  other_party_name: string | null;
+  other_party_phone: string | null;
+  annual_rent: number;
+  payment_frequency: PaymentFrequency;
+  deposit: number | null;
+  start_date: string;
+  duration_months: number;
+  notes: string | null;
+  listing_id: string | null;
+  status: ContractStatus;
+  assigned_to: string | null;
+  ejar_contract_number: string | null;
+  contract_end_date: string | null;
+  renewal_reminded_at: string | null;
+  created_at: string;
+};
+
+export type ContractEvent = {
+  id: string;
+  contract_id: string;
+  actor_id: string | null;
+  from_status: ContractStatus | null;
+  to_status: ContractStatus | null;
+  note: string | null;
+  is_internal: boolean;
   created_at: string;
 };
 

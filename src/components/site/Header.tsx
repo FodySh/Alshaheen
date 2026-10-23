@@ -9,6 +9,7 @@ const NAV = [
   { href: "/listings?purpose=sale", label: "للبيع" },
   { href: "/listings?purpose=rent", label: "للإيجار" },
   { href: "/submit", label: "اعرض عقارك" },
+  { href: "/contracts", label: "توثيق العقود" },
 ];
 
 export function Header() {

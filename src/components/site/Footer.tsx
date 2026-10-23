@@ -63,6 +63,7 @@ export async function Footer() {
           <ul className="mt-3 grid gap-2 text-sm">
             <li><Link href="/listings" className="hover:text-olive-deep">جميع العروض</Link></li>
             <li><Link href="/submit" className="hover:text-olive-deep">اعرض عقارك علينا</Link></li>
+            <li><Link href="/contracts" className="hover:text-olive-deep">توثيق عقود الإيجار</Link></li>
             <li><Link href="/complaints" className="hover:text-olive-deep">الشكاوى والملاحظات</Link></li>
             <li><Link href="/account" className="hover:text-olive-deep">حسابي</Link></li>
           </ul>

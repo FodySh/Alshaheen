@@ -2,7 +2,20 @@ import { REQUEST_STATUS_LABEL } from "@/lib/constants";
 import { formatDateTime } from "@/lib/format";
 import type { RequestEvent } from "@/lib/types";
 
-export function RequestTimeline({ events, names }: { events: RequestEvent[]; names?: Record<string, string> }) {
+type TimelineEvent = Pick<RequestEvent, "id" | "actor_id" | "note" | "is_internal" | "created_at"> & {
+  from_status: string | null;
+  to_status: string | null;
+};
+
+export function RequestTimeline({
+  events,
+  names,
+  labels = REQUEST_STATUS_LABEL,
+}: {
+  events: TimelineEvent[];
+  names?: Record<string, string>;
+  labels?: Record<string, string>;
+}) {
   return (
     <ol className="grid">
       {events.map((e, i) => (
@@ -12,7 +25,7 @@ export function RequestTimeline({ events, names }: { events: RequestEvent[]; nam
           <div className="min-w-0">
             <p className="text-sm">
               {e.to_status && e.to_status !== e.from_status ? (
-                <span className="font-semibold">{REQUEST_STATUS_LABEL[e.to_status]}</span>
+                <span className="font-semibold">{labels[e.to_status] ?? e.to_status}</span>
               ) : (
                 <span className="font-semibold">{e.is_internal ? "ملاحظة داخلية" : "تحديث"}</span>
               )}

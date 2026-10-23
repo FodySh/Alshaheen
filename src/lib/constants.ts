@@ -1,5 +1,9 @@
 import type {
   BookingStatus,
+  ContractKind,
+  ContractParty,
+  ContractStatus,
+  PaymentFrequency,
   ComplaintStatus,
   DealPurpose,
   InquiryStatus,
@@ -234,3 +238,64 @@ export const COMPLAINT_TONE: Record<ComplaintStatus, Tone> = {
   in_progress: "neutral",
   resolved: "olive",
 };
+
+// =============================================================
+// عقود الإيجار
+// =============================================================
+export const CONTRACT_PARTY_LABEL: Record<ContractParty, string> = {
+  landlord: "المالك (المؤجر)",
+  landlord_agent: "وكيل عن المالك",
+  tenant: "المستأجر",
+};
+
+export const CONTRACT_KIND_LABEL: Record<ContractKind, string> = { residential: "سكني", commercial: "تجاري" };
+
+export const PAYMENT_FREQUENCY_LABEL: Record<PaymentFrequency, string> = {
+  monthly: "شهرية",
+  quarterly: "ربع سنوية",
+  semiannual: "نصف سنوية",
+  annual: "سنوية",
+};
+
+export const CONTRACT_DURATIONS: { months: number; label: string }[] = [
+  { months: 3, label: "3 أشهر" },
+  { months: 6, label: "6 أشهر" },
+  { months: 12, label: "سنة" },
+  { months: 24, label: "سنتان" },
+  { months: 36, label: "3 سنوات" },
+  { months: 48, label: "4 سنوات" },
+  { months: 60, label: "5 سنوات" },
+];
+
+export function durationLabel(months: number) {
+  return CONTRACT_DURATIONS.find((d) => d.months === months)?.label ?? `${months} شهراً`;
+}
+
+export const CONTRACT_STATUS_LABEL: Record<ContractStatus, string> = {
+  new: "جديد",
+  contacted: "تم التواصل",
+  awaiting_data: "بانتظار البيانات",
+  sent_to_ejar: "بانتظار موافقة الطرفين في إيجار",
+  documented: "موثّق",
+  cancelled: "ملغى",
+};
+
+export const CONTRACT_STATUS_HELP: Record<ContractStatus, string> = {
+  new: "استلمنا طلبك وسيتواصل معك أحد الوسطاء.",
+  contacted: "تواصل معك الوسيط لاستكمال التفاصيل.",
+  awaiting_data: "ننتظر منك بعض البيانات أو المستندات. تفاصيلها في سجل الطلب.",
+  sent_to_ejar: "أنشأنا العقد في منصة إيجار. ستصل للمؤجر والمستأجر رسالة نصية للموافقة عبر نفاذ.",
+  documented: "تم توثيق العقد في منصة إيجار.",
+  cancelled: "أُلغي الطلب. السبب موضح في السجل.",
+};
+
+export const CONTRACT_TONE: Record<ContractStatus, Tone> = {
+  new: "clay",
+  contacted: "neutral",
+  awaiting_data: "clay",
+  sent_to_ejar: "neutral",
+  documented: "olive",
+  cancelled: "muted",
+};
+
+export const CONTRACT_RENEWAL_DAYS = 60;

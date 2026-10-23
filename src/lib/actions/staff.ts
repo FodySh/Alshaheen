@@ -605,8 +605,9 @@ export async function updateSettings(_: ActionState | null, fd: FormData): Promi
       email: z.union([z.literal(""), z.string().trim().email("البريد غير صحيح.")]),
       address: z.string().trim().max(200),
       about: z.string().trim().max(600),
+      contract_service_fee: z.string().trim().max(200),
     })
-    .safeParse(Object.fromEntries(["office_name", "fal_license_number", "cr_number", "phone", "whatsapp", "email", "address", "about"].map((k) => [k, str(fd.get(k))])));
+    .safeParse(Object.fromEntries(["office_name", "fal_license_number", "cr_number", "phone", "whatsapp", "email", "address", "about", "contract_service_fee"].map((k) => [k, str(fd.get(k))])));
   if (!parsed.success) return { error: firstIssue(parsed.error) };
   const values = Object.fromEntries(
     Object.entries(parsed.data).map(([k, v]) => [k, k === "office_name" ? v : normalizeOrNull(k, v)]),

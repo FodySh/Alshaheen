@@ -43,7 +43,18 @@ export default async function DashboardHome() {
     .limit(6);
   reqQ = admin ? reqQ.eq("status", "new") : reqQ.in("status", ["under_review", "awaiting_license"]);
 
-  const [live, expiring, reqs, inq, bk] = await Promise.all([
+  const in60 = new Date(Date.parse(nowIso) + 60 * 86_400_000).toISOString().slice(0, 10);
+  let renewQ = supabase
+    .from("contract_requests")
+    .select("id, ref_no, district, contract_end_date, ejar_contract_number")
+    .eq("status", "documented")
+    .lte("contract_end_date", in60)
+    .gte("contract_end_date", today)
+    .order("contract_end_date")
+    .limit(10);
+  if (!admin) renewQ = renewQ.eq("assigned_to", user.id);
+
+  const [live, expiring, reqs, inq, bk, renew] = await Promise.all([
     listingsQ,
     expiringQ,
     reqQ,
@@ -56,7 +67,9 @@ export default async function DashboardHome() {
       .lte("starts_at", weekIso)
       .order("starts_at")
       .limit(8),
+    renewQ,
   ]);
+  const renewals = (renew.data ?? []) as { id: string; ref_no: number; district: string; contract_end_date: string; ejar_contract_number: string }[];
 
   type BRow = { id: string; starts_at: string; listing_id: string; listings: { title: string } | null; profiles: { full_name: string; phone: string } | null };
   const bookings = (bk.data ?? []) as unknown as BRow[];
@@ -92,6 +105,27 @@ export default async function DashboardHome() {
                 </li>
               );
             })}
+          </ul>
+        </section>
+      )}
+
+      {renewals.length > 0 && (
+        <section className="mt-6 rounded-lg border border-sand-deep bg-white p-4" aria-labelledby="renew-h">
+          <div className="flex items-center justify-between">
+            <h2 id="renew-h" className="font-semibold">عقود إيجار تنتهي خلال 60 يوماً</h2>
+            <Link href="/dashboard/contracts?tab=renewal" className="text-sm text-olive-deep hover:underline">الكل</Link>
+          </div>
+          <p className="mt-1 text-sm text-ink-soft">تواصل مع المالك والمستأجر للتجديد.</p>
+          <ul className="mt-3 grid gap-1">
+            {renewals.map((r) => (
+              <li key={r.id}>
+                <Link href={`/dashboard/contracts/${r.id}`} className="flex flex-wrap gap-x-3 text-sm hover:underline">
+                  <span className="num text-ink-soft" dir="ltr">#{r.ref_no}</span>
+                  <span className="font-medium">عقد في {r.district}</span>
+                  <span className="num text-clay">ينتهي {formatPlainDate(r.contract_end_date)} (بعد {daysUntil(r.contract_end_date)} يوم)</span>
+                </Link>
+              </li>
+            ))}
           </ul>
         </section>
       )}

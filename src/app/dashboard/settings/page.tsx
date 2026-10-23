@@ -12,7 +12,7 @@ export default async function SettingsPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("office_settings")
-    .select("office_name, fal_license_number, cr_number, phone, whatsapp, email, address, about")
+    .select("office_name, fal_license_number, cr_number, phone, whatsapp, email, address, about, contract_service_fee")
     .eq("id", 1)
     .maybeSingle();
   const settings = (data as OfficeSettings | null) ?? DEFAULT_SETTINGS;

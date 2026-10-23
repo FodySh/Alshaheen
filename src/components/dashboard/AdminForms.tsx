@@ -60,6 +60,7 @@ const SETTINGS_FIELDS: { name: keyof OfficeSettings; label: string; hint?: strin
   { name: "email", label: "البريد العام", ltr: true },
   { name: "address", label: "العنوان", wide: true },
   { name: "about", label: "نبذة عن المكتب", hint: "تظهر في تذييل الموقع.", wide: true, area: true },
+  { name: "contract_service_fee", label: "رسوم خدمة توثيق عقد الإيجار", hint: "تظهر في صفحة توثيق العقود. اتركها فارغة لتظهر \"حسب الاتفاق\".", wide: true },
 ];
 
 export function SettingsForm({ settings }: { settings: OfficeSettings }) {
