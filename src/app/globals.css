@@ -1,26 +1,221 @@
 @import "tailwindcss";
 
+/*
+  الهوية: "عصري دافئ" — مستوحاة من جدة التاريخية.
+  حجر منقبي للأسطح، خشب الرواشين للنص، والزيتي للأفعال.
+  الطيني للتنبيهات فقط.
+*/
+@theme {
+  --color-paper: #fcfbf8;
+  --color-sand: #efe7da;
+  --color-sand-deep: #e2d6c3;
+  --color-stone: #cdbfa9;
+  --color-ink: #2b2118;
+  --color-ink-soft: #6b5e50;
+  --color-olive: #4e5f2c;
+  --color-olive-deep: #3c4a21;
+  --color-olive-tint: #e6ead8;
+  --color-clay: #9c5a3c;
+  --color-clay-tint: #f3e3da;
+  --color-danger: #9b2c2c;
+  --color-danger-tint: #f6e1e1;
+
+  --font-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-display: "Reem Kufi", "IBM Plex Sans Arabic", sans-serif;
+
+  --radius-card: 0.5rem;
+  --radius-control: 0.375rem;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.8;
+  font-feature-settings: "kern";
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+::selection {
+  background: var(--color-olive-tint);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-olive);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== عناصر الواجهة ===== */
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius-control);
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    transition: background-color 120ms, border-color 120ms, color 120ms;
+    cursor: pointer;
+  }
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--color-olive);
+    color: #fff;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-olive-deep);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--color-ink);
+    border: 1px solid var(--color-stone);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    border-color: var(--color-ink-soft);
+    background: #fff;
+  }
+  .btn-quiet {
+    background: transparent;
+    color: var(--color-olive-deep);
+    padding-inline: 0.5rem;
+    min-height: 2.25rem;
+  }
+  .btn-quiet:hover:not(:disabled) {
+    background: var(--color-olive-tint);
+  }
+  .btn-danger {
+    background: transparent;
+    color: var(--color-danger);
+    border: 1px solid #e3c2c2;
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: var(--color-danger-tint);
+  }
+  .btn-sm {
+    min-height: 2.25rem;
+    padding: 0.25rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  .label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.375rem;
+    color: var(--color-ink);
+  }
+  .hint {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-ink-soft);
+    margin-top: 0.25rem;
+    line-height: 1.6;
+  }
+  .field {
+    display: block;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    background: #fff;
+    border: 1px solid var(--color-stone);
+    border-radius: var(--radius-control);
+    font-size: 1rem;
+    color: var(--color-ink);
+    transition: border-color 120ms;
+  }
+  .field:hover {
+    border-color: var(--color-ink-soft);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-olive);
+    box-shadow: 0 0 0 3px var(--color-olive-tint);
+  }
+  .field[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+  textarea.field {
+    min-height: 7rem;
+    line-height: 1.7;
+  }
+  select.field {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%236b5e50' stroke-width='1.6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 0.85rem center;
+    padding-left: 2.25rem;
+  }
+  .field-ltr {
+    direction: ltr;
+    text-align: right;
+  }
+
+  .panel {
+    background: #fff;
+    border: 1px solid var(--color-sand-deep);
+    border-radius: var(--radius-card);
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.925rem;
+  }
+  .data-table th {
+    text-align: start;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--color-ink-soft);
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid var(--color-sand-deep);
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--color-sand);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td {
+    border-bottom: 0;
+  }
+  .data-table tbody tr:hover {
+    background: #fdfcf9;
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
 }

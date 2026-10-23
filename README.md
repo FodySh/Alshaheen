@@ -1,36 +1,189 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# منصة الشاهين لإدارة الأملاك
 
-## Getting Started
+موقع عام لمكتب عقاري في جدة، مع لوحة تحكم للفريق.
 
-First, run the development server:
+- **الزوار:** يتصفحون العروض ويحجزون المعاينة ويرسلون الاستفسارات.
+- **الملاك والوكلاء:** يرفعون طلبات تسويق خاصة لا يراها أحد غير المكتب.
+- **الفريق:** يراجع الطلبات، ويستخرج ترخيص الإعلان، ثم ينشر.
+
+**التقنية:**
+
+| الجزء | الأداة |
+| --- | --- |
+| الواجهة والخادم | Next.js 16 |
+| قاعدة البيانات والدخول والتخزين | Supabase: ‏PostgreSQL وAuth وStorage |
+| البريد | Resend |
+| الاستضافة | Vercel |
+
+---
+
+## ماذا تفعل المنصة
+
+### الواجهة العامة
+
+| الصفحة | الوظيفة |
+| --- | --- |
+| الرئيسية | بحث سريع، أحدث العروض، شرح مراحل التسويق |
+| العروض | تصفية حسب الغرض والنوع والحي والسعر والمساحة والغرف، وترتيب، وصفحات |
+| صفحة العرض | صور، مواصفات، مزايا، رابط الخريطة، **بيانات الإعلان الإلزامية** (رقم ترخيص الإعلان وتاريخ انتهائه، اسم المعلن، رخصة فال)، اتصال وواتساب، حجز معاينة من المواعيد المتاحة، استفسار |
+| اعرض عقارك | طلب تسويق خاص يتضمن: صفة المتقدم (مالك أو وكيل)، بيانات العقار، رقم الصك، صورة الصك والوكالة، حتى 15 صورة تُضغط في المتصفح قبل الرفع |
+| حسابي | حالة طلبات التسويق وسجلها، المواعيد وإلغاؤها، الاستفسارات وردود المكتب، الشكاوى، تعديل البيانات |
+| الشكاوى | متاحة بدون تسجيل، وكل شكوى تحصل على رقم |
+| سياسة الخصوصية | صيغة أولية تحتاج مراجعة قانونية |
+
+### لوحة المكتب `/dashboard`
+
+**الصلاحيات:**
+
+| الدور | ما يراه ويفعله |
+| --- | --- |
+| **مدير** | كل شيء: يسند الطلبات للوسطاء، ويدير الفريق والشكاوى والإعدادات |
+| **وسيط** | الطلبات المسندة إليه، وعروضه، واستفساراتها، ومواعيده وحجوزاتها |
+
+**مسار طلب التسويق:**
+
+`جديد ← قيد المراجعة ← بانتظار ترخيص الإعلان ← منشور ← مغلق` (أو `مرفوض` مع سبب يظهر للمالك)
+
+- الإسناد يحوّل الطلب إلى "قيد المراجعة" تلقائياً.
+- زر "أنشئ مسودة العرض" ينسخ بيانات الطلب وصوره إلى عرض جديد.
+- نشر العرض يحوّل الطلب إلى "منشور"، وتسجيل البيع أو التأجير يغلقه.
+- الملاحظات الداخلية لا يراها المالك. الرسائل الظاهرة تصله في حسابه وعلى بريده.
+
+**ضوابط ترخيص الإعلان (مفروضة في قاعدة البيانات نفسها):**
+
+- لا يُنشر عرض بدون رقم ترخيص وتاريخ انتهاء.
+- لا يُنشر عرض ترخيصه منتهٍ.
+- يُخفى العرض عن الزوار تلقائياً يوم انتهاء ترخيصه (بتوقيت الرياض)، ويظهر للفريق تنبيه قبلها بسبعة أيام.
+
+**المعاينات:**
+
+- يضيف الوسيط أوقاته المتاحة، مع إمكانية التكرار أسبوعياً.
+- يحجز الزائر من صفحة العرض: بعد ساعتين على الأقل من وقت الحجز، وخلال 30 يوماً.
+- لا يُحجز الموعد الواحد مرتين، ولا يحجز الزائر موعدين لنفس العقار.
+
+**التنبيهات بالبريد:**
+
+| الحدث | يصل إلى |
+| --- | --- |
+| طلب جديد | بريد المكتب، مع تأكيد لمقدم الطلب |
+| إسناد الطلب | الوسيط |
+| تغيير ظاهر في حالة الطلب | المالك |
+| استفسار جديد | الوسيط المسؤول |
+| رد على استفسار | الزائر |
+| حجز أو إلغاء | الطرفان |
+| شكوى جديدة | بريد المكتب |
+
+---
+
+## التشغيل خطوة بخطوة
+
+### 1) Supabase — قاعدة البيانات
+
+1. أنشئ مشروعاً في [supabase.com](https://supabase.com). Supabase لا تملك منطقة في الشرق الأوسط، والأقرب جغرافياً **مومباي** أو **فرانكفورت**.
+2. افتح **SQL Editor**، والصق محتوى الملف `supabase/migrations/20261023000000_init.sql` كاملاً، ثم اضغط **Run**. الملف يعمل كمعاملة واحدة: إن فشل لا يترك شيئاً نصف مطبّق.
+3. من **Project Settings → API Keys** انسخ القيم الثلاث:
+   - `Project URL`
+   - `Publishable key`
+   - `Secret key` — سري، للخادم فقط.
+
+### 2) Supabase — إعدادات الدخول
+
+1. **Authentication → URL Configuration:**
+   - `Site URL` = رابط موقعك، مثل `https://alshaheen.sa`.
+   - `Redirect URLs`: أضف `https://alshaheen.sa/**`. أضف أيضاً `http://localhost:3000/**` إن كنت ستشغّل الموقع محلياً.
+2. **Authentication → Emails → Templates:** انسخ القالبين العربيين من `docs/email-templates.md`.
+3. **Authentication → Emails → SMTP Settings:** بريد Supabase الافتراضي للتجربة فقط ومحدود جداً، فاربط Resend:
+
+   | الحقل | القيمة |
+   | --- | --- |
+   | Host | `smtp.resend.com` |
+   | Port | `465` |
+   | Username | `resend` |
+   | Password | مفتاح Resend |
+   | Sender | `no-reply@دومينك` |
+
+4. **اختياري لاحقاً:** فعّل CAPTCHA (Cloudflare Turnstile) من **Authentication → Attack Protection** للحد من التسجيلات الآلية.
+
+### 3) Resend — البريد
+
+1. أنشئ حساباً في [resend.com](https://resend.com)، وأضف دومين المكتب، وأكمل سجلات DNS التي يطلبها.
+2. أنشئ مفتاح API.
+
+### 4) GitHub وVercel — النشر
+
+1. ارفع المشروع إلى مستودع GitHub.
+2. في [vercel.com](https://vercel.com): **Add New → Project** ثم اختر المستودع.
+3. أضف متغيرات البيئة التالية (القائمة نفسها في `.env.example`):
+
+   | المتغير | القيمة |
+   | --- | --- |
+   | `NEXT_PUBLIC_SUPABASE_URL` | Project URL |
+   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable key |
+   | `SUPABASE_SECRET_KEY` | Secret key (يُستخدم فقط لقراءة بريد الموظف المستلم للتنبيه) |
+   | `NEXT_PUBLIC_SITE_URL` | `https://alshaheen.sa` |
+   | `RESEND_API_KEY` | مفتاح Resend |
+   | `EMAIL_FROM` | `الشاهين لإدارة الأملاك <no-reply@alshaheen.sa>` |
+   | `OFFICE_NOTIFY_EMAIL` | البريد الذي تصله الطلبات الجديدة والشكاوى |
+
+4. اضغط **Deploy**، ثم اربط الدومين من **Settings → Domains**.
+
+### 5) أول مدير
+
+1. سجّل حساباً من الموقع ببريدك (صفحة "حساب جديد").
+2. في **SQL Editor** في Supabase شغّل السطر التالي بعد وضع بريدك:
+
+   ```sql
+   update public.profiles set role = 'admin' where email = 'بريدك@example.com';
+   ```
+
+3. ادخل `/dashboard`، ثم من **إعدادات المكتب** أدخل رقم رخصة فال والسجل التجاري.
+4. لإضافة الوسطاء: كل وسيط يسجّل حساباً من الموقع، ثم تضيفه أنت من صفحة **الفريق** ببريده.
+
+---
+
+## التشغيل محلياً للتطوير
 
 ```bash
+npm install
+cp .env.example .env.local   # وضع قيم مشروع Supabase
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## نموذج الأمان
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- كل الصلاحيات مفروضة في قاعدة البيانات بسياسات **Row Level Security**، لا في الواجهة فقط. أي استدعاء مباشر للـ API يخضع لنفس القيود.
+- الكتابة المباشرة على الجداول الحساسة محصورة بأعمدة محددة، وتغيير الحالات والإسناد والحجز يتم عبر دوال تتحقق من الصلاحية داخلياً.
+- لا يستطيع أي مستخدم ترقية نفسه. الدور الافتراضي "زائر"، وتغيير الأدوار للمدير فقط.
+- مستندات الطلبات (الصك والوكالة والصور) في تخزين **خاص**: مسار كل ملف `{المستخدم}/{الطلب}/…`، ولا يفتحه إلا صاحبه والوسيط المسند والمدير، عبر روابط مؤقتة.
+- صور العروض المنشورة في تخزين عام، ولا يرفع إليه إلا الفريق.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ملاحظات نظامية وقرارات مفتوحة
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **هل يُعامَل الموقع كمنصة عقارية إلكترونية؟** اللائحة التنظيمية للتسويق والإعلانات العقارية (أم القرى، 1 مايو 2026) تفرض على المنصات التزامات منها:
+  - النفاذ الوطني لتوثيق المعلنين.
+  - الربط التقني مع الهيئة.
+  - استضافة الخادم داخل المملكة.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+  صُمّمت المنصة بحيث **لا ينشر المالك بنفسه**: المكتب ينشر بترخيص إعلان باسمه. هذا أخف تنظيمياً، لكن النص لا يستثني مواقع المكاتب صراحة. **أكّد ذلك مع الهيئة العامة للعقار.**
+- **مكان البيانات:** Supabase وVercel خارج المملكة، وهذا اختيارك للسرعة. قاعدة البيانات PostgreSQL قياسية، فالنقل لاحقاً إلى استضافة داخل المملكة (مثل Google Cloud الدمام) ممكن دون إعادة كتابة.
+- **سياسة الخصوصية** في `/privacy` صيغة أولية. راجعها مع مستشار قانوني وفق نظام حماية البيانات الشخصية.
+- **صفحة الشكاوى:** تعطي رقماً وتاريخاً، وتسجّل الحالة والإجراء المتخذ. إن أردت إعلان مدة معالجة محددة، عدّل النص في `src/app/(site)/complaints/page.tsx`.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## بنية المشروع
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+supabase/migrations/   قاعدة البيانات والصلاحيات والتخزين (ملف واحد)
+docs/                  قوالب بريد الدخول
+src/app/(site)/        الواجهة العامة وحساب الزائر
+src/app/dashboard/     لوحة المكتب
+src/app/auth/          روابط التفعيل والخروج
+src/lib/actions/       إجراءات الخادم (visitor, requests, staff, auth)
+src/lib/data/          استعلامات البيانات العامة المخزنة مؤقتاً
+src/components/        المكونات والنماذج
+```

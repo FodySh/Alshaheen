@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  // الصور تُضغط في المتصفح قبل رفعها، فلا حاجة لمحسّن الصور
+  images: { unoptimized: true },
   turbopack: {
     rules: {
       "*.css": {
