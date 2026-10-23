@@ -182,7 +182,10 @@ export type ContractStatus = "new" | "contacted" | "awaiting_data" | "sent_to_ej
 export type ContractRequest = {
   id: string;
   ref_no: number;
-  submitter_id: string;
+  submitter_id: string | null;
+  requester_name: string | null;
+  requester_phone: string | null;
+  requester_email: string | null;
   requester_role: ContractParty;
   contract_kind: ContractKind;
   is_renewal: boolean;

@@ -50,7 +50,9 @@ export default async function DashContractPage({ params }: { params: Promise<{ i
   const canManage = admin || c.assigned_to === user.id;
 
   const [{ data: submitter }, { data: ev }, { data: staff }, { data: listing }] = await Promise.all([
-    supabase.from("profiles").select("full_name, phone, email").eq("id", c.submitter_id).maybeSingle(),
+    c.submitter_id
+      ? supabase.from("profiles").select("full_name, phone, email").eq("id", c.submitter_id).maybeSingle()
+      : Promise.resolve({ data: null as { full_name: string; phone: string; email: string | null } | null }),
     supabase.from("contract_events").select("*").eq("contract_id", id).order("created_at"),
     admin
       ? supabase.from("profiles").select("id, full_name").in("role", ["agent", "admin"]).eq("is_active", true).order("full_name")
@@ -63,6 +65,9 @@ export default async function DashContractPage({ params }: { params: Promise<{ i
   const names = Object.fromEntries((actors ?? []).map((a: { id: string; full_name: string }) => [a.id, a.full_name]));
 
   const otherLabel = c.requester_role === "tenant" ? "المؤجر" : "المستأجر";
+  const reqName = c.requester_name ?? submitter?.full_name ?? "—";
+  const reqPhone = c.requester_phone ?? submitter?.phone ?? null;
+  const reqEmail = c.requester_email ?? submitter?.email ?? null;
   const end = expectedEnd(c.start_date, c.duration_months);
   const facts: [string, string][] = [
     ["نوع العقد", `${CONTRACT_KIND_LABEL[c.contract_kind]}${c.is_renewal ? " (تجديد)" : ""}`],
@@ -108,12 +113,17 @@ export default async function DashContractPage({ params }: { params: Promise<{ i
             <div className="mt-3 grid gap-4">
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                 <div>
-                  <p className="text-xs text-ink-soft">مقدم الطلب — {CONTRACT_PARTY_LABEL[c.requester_role]}</p>
-                  <p className="font-medium">{submitter?.full_name} <span className="num ms-2 text-ink-soft" dir="ltr">{submitter?.phone}</span></p>
+                  <p className="text-xs text-ink-soft">
+                    مقدم الطلب — {CONTRACT_PARTY_LABEL[c.requester_role]}
+                    {!c.submitter_id && " — بدون حساب"}
+                  </p>
+                  <p className="font-medium">{reqName} <span className="num ms-2 text-ink-soft" dir="ltr">{reqPhone}</span></p>
+                  {reqEmail && <p className="text-sm text-ink-soft" dir="ltr" style={{ textAlign: "right" }}>{reqEmail}</p>}
+                  {!reqEmail && <p className="text-xs text-clay">لم يترك بريداً: لن تصله تحديثات بالبريد، تواصل معه هاتفياً.</p>}
                 </div>
-                {submitter?.phone && (
+                {reqPhone && (
                   <div className="ms-auto">
-                    <ContactButtons phone={submitter.phone} text={`السلام عليكم ${submitter.full_name}، معك الشاهين لإدارة الأملاك بخصوص طلب توثيق عقد الإيجار رقم ${c.ref_no}`} />
+                    <ContactButtons phone={reqPhone} text={`السلام عليكم ${reqName}، معك الشاهين لإدارة الأملاك بخصوص طلب توثيق عقد الإيجار رقم ${c.ref_no}`} />
                   </div>
                 )}
               </div>

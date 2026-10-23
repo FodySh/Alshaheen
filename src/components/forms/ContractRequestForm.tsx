@@ -1,7 +1,9 @@
 "use client";
 import { useActionState, useState } from "react";
 import { createContractRequest } from "@/lib/actions/contracts";
+import Link from "next/link";
 import { CONTRACT_DURATIONS, PROPERTY_GROUPS, PROPERTY_TYPE_LABEL } from "@/lib/constants";
+import { CheckIcon } from "../icons";
 import type { ContractParty } from "@/lib/types";
 import { ActionForm } from "./ActionForm";
 import { FormMessage } from "./FormMessage";
@@ -31,7 +33,17 @@ function Choice({ name, value, checked, onChange, title, hint }: { name: string;
   );
 }
 
-export function ContractRequestForm({ districts, today }: { districts: string[]; today: string }) {
+type Requester = { name: string; phone: string; email: string };
+
+export function ContractRequestForm({
+  districts,
+  today,
+  requester,
+}: {
+  districts: string[];
+  today: string;
+  requester?: Requester;
+}) {
   const [state, action] = useActionState(createContractRequest, null);
   const [role, setRole] = useState<ContractParty>("landlord");
   const [kind, setKind] = useState("residential");
@@ -40,8 +52,51 @@ export function ContractRequestForm({ districts, today }: { districts: string[];
   const [district, setDistrict] = useState("");
   const other = role === "tenant" ? "المؤجر" : "المستأجر";
 
+  if (state?.ok)
+    return (
+      <div className="grid justify-items-start gap-4 py-4" role="status">
+        <span className="flex size-11 items-center justify-center rounded-full bg-olive-tint text-olive-deep">
+          <CheckIcon className="size-6" />
+        </span>
+        <p className="text-lg font-semibold">{state.message}</p>
+        <p className="text-sm leading-7 text-ink-soft">
+          احتفظ برقم الطلب للمراجعة. إن أنشأت حساباً بنفس البريد يمكنك متابعة طلباتك القادمة من حسابك.
+        </p>
+        <Link href="/" className="btn btn-secondary">العودة للرئيسية</Link>
+      </div>
+    );
+
   return (
     <ActionForm action={action} className="grid gap-8">
+      {!requester && (
+        <p className="-mb-2 rounded-md bg-sand/60 px-4 py-3 text-sm leading-7 text-ink-soft">
+          لا يلزم حساب لتقديم الطلب. لديك حساب؟{" "}
+          <Link href="/login?next=/contracts" className="font-semibold text-olive-deep hover:underline">سجّل الدخول</Link>{" "}
+          لتتابع الطلب من حسابك.
+        </p>
+      )}
+      <div className="hidden" aria-hidden>
+        <label>الموقع<input name="website" tabIndex={-1} autoComplete="off" /></label>
+      </div>
+
+      <Section title="بياناتك" hint={requester ? "من حسابك، ويمكنك تعديلها لهذا الطلب." : "نتواصل معك على جوالك لاستكمال الطلب."}>
+        <div className="grid gap-5 sm:grid-cols-3">
+          <div>
+            <label htmlFor="requester_name" className="label">الاسم</label>
+            <input id="requester_name" name="requester_name" required minLength={2} maxLength={100} autoComplete="name" defaultValue={requester?.name} className="field" />
+          </div>
+          <div>
+            <label htmlFor="requester_phone" className="label">رقم الجوال</label>
+            <input id="requester_phone" name="requester_phone" required pattern="05[0-9]{8}" inputMode="numeric" autoComplete="tel" placeholder="05xxxxxxxx" defaultValue={requester?.phone} className="field field-ltr num" />
+          </div>
+          <div>
+            <label htmlFor="requester_email" className="label">البريد <span className="font-normal text-ink-soft">(اختياري)</span></label>
+            <input id="requester_email" name="requester_email" type="email" autoComplete="email" defaultValue={requester?.email} className="field field-ltr" />
+            <span className="hint">لتصلك تحديثات الطلب.</span>
+          </div>
+        </div>
+      </Section>
+
       <Section title="صفتك في العقد">
         <div className="grid gap-2 sm:grid-cols-3">
           <Choice name="requester_role" value="landlord" checked={role === "landlord"} onChange={() => setRole("landlord")} title="المالك" hint="أنا المؤجر" />

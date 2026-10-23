@@ -18,7 +18,7 @@ const TABS: { value: string; label: string; statuses?: ContractStatus[] }[] = [
   { value: "all", label: "الكل" },
 ];
 
-type Row = Pick<ContractRequest, "id" | "ref_no" | "requester_role" | "contract_kind" | "is_renewal" | "district" | "annual_rent" | "status" | "contract_end_date" | "created_at"> & {
+type Row = Pick<ContractRequest, "id" | "ref_no" | "requester_role" | "requester_name" | "requester_phone" | "submitter_id" | "contract_kind" | "is_renewal" | "district" | "annual_rent" | "status" | "contract_end_date" | "created_at"> & {
   submitter: { full_name: string; phone: string } | null;
   agent: { full_name: string } | null;
 };
@@ -34,7 +34,7 @@ export default async function ContractsDash({ searchParams }: { searchParams: Pr
   let q = supabase
     .from("contract_requests")
     .select(
-      "id, ref_no, requester_role, contract_kind, is_renewal, district, annual_rent, status, contract_end_date, created_at, submitter:profiles!contract_requests_submitter_id_fkey(full_name, phone), agent:profiles!contract_requests_assigned_to_fkey(full_name)",
+      "id, ref_no, requester_role, requester_name, requester_phone, submitter_id, contract_kind, is_renewal, district, annual_rent, status, contract_end_date, created_at, submitter:profiles!contract_requests_submitter_id_fkey(full_name, phone), agent:profiles!contract_requests_assigned_to_fkey(full_name)",
     )
     .limit(300);
   if (tab.statuses) q = q.in("status", tab.statuses);
@@ -82,8 +82,11 @@ export default async function ContractsDash({ searchParams }: { searchParams: Pr
                       </Link>
                     </td>
                     <td>
-                      {c.submitter?.full_name}
-                      <span className="block text-xs text-ink-soft">{CONTRACT_PARTY_LABEL[c.requester_role]}</span>
+                      {c.requester_name ?? c.submitter?.full_name}
+                      <span className="block text-xs text-ink-soft">
+                        {CONTRACT_PARTY_LABEL[c.requester_role]}
+                        {!c.submitter_id && " — بدون حساب"}
+                      </span>
                     </td>
                     <td className="num whitespace-nowrap">{formatPrice(c.annual_rent)}</td>
                     <td className="text-sm">{c.agent?.full_name ?? <span className="text-clay">غير مسند</span>}</td>

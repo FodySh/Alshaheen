@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import { ContractRequestForm } from "@/components/forms/ContractRequestForm";
 import { getSessionUser } from "@/lib/auth";
@@ -79,17 +78,12 @@ async function Fee() {
 }
 
 async function Gate() {
-  const user = await getSessionUser();
-  if (!user)
-    return (
-      <div className="py-6 text-center">
-        <p className="font-semibold">سجّل الدخول لتقديم الطلب</p>
-        <p className="mt-2 text-sm text-ink-soft">نحتاج حساباً لنبلغك بحالة طلبك ونتواصل معك.</p>
-        <div className="mt-5 flex justify-center gap-2">
-          <Link href="/login?next=/contracts" className="btn btn-primary">دخول</Link>
-          <Link href="/register?next=/contracts" className="btn btn-secondary">حساب جديد</Link>
-        </div>
-      </div>
-    );
-  return <ContractRequestForm districts={await getDistricts()} today={riyadhToday()} />;
+  const [user, districts] = await Promise.all([getSessionUser(), getDistricts()]);
+  return (
+    <ContractRequestForm
+      districts={districts}
+      today={riyadhToday()}
+      requester={user ? { name: user.profile.full_name, phone: user.profile.phone, email: user.email ?? "" } : undefined}
+    />
+  );
 }

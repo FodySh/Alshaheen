@@ -33,9 +33,11 @@ export async function GET(request: NextRequest) {
     if (!claimed?.length) continue;
 
     const ids = [c.submitter_id, c.assigned_to].filter((x): x is string => !!x);
+    if (ids.length === 0) ids.push("00000000-0000-0000-0000-000000000000");
     const { data: people } = await admin.from("profiles").select("id, email, full_name").in("id", ids);
     const byId = new Map((people ?? []).map((p: { id: string; email: string | null; full_name: string }) => [p.id, p]));
-    const owner = byId.get(c.submitter_id);
+    const ownerProfile = c.submitter_id ? byId.get(c.submitter_id) : undefined;
+    const owner = { full_name: c.requester_name ?? ownerProfile?.full_name, email: c.requester_email ?? ownerProfile?.email ?? null };
     const agent = c.assigned_to ? byId.get(c.assigned_to) : null;
     const days = c.contract_end_date ? daysUntil(c.contract_end_date) : CONTRACT_RENEWAL_DAYS;
     const endText = c.contract_end_date ? formatPlainDate(c.contract_end_date) : "";

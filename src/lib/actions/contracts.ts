@@ -14,7 +14,7 @@ import {
   durationLabel,
 } from "../constants";
 import { officeEmail, sendMail } from "../email";
-import { formatPlainDate, formatPrice, riyadhToday } from "../format";
+import { formatPlainDate, formatPrice } from "../format";
 import { normalizeDigits, optionalNumber, str } from "../parse";
 import { getProfileEmail } from "../supabase/admin";
 import { createClient } from "../supabase/server";
@@ -40,15 +40,17 @@ function refresh(id?: string) {
 // =============================================================
 
 export async function createContractRequest(_: ActionState | null, fd: FormData): Promise<ActionState> {
+  if (fd.get("website")) return { ok: true, message: "استلمنا طلبك." }; // مصيدة الروبوتات
   const user = await actionUser();
-  if (!user) return { error: "سجّل الدخول لتقديم الطلب." };
 
   const districtChoice = str(fd.get("district"));
   const hasOther = fd.get("has_other_party") === "yes";
-  const phone = normalizeDigits(fd.get("other_party_phone"));
 
   const parsed = z
     .object({
+      requester_name: z.string().trim().min(2, "اكتب اسمك.").max(100),
+      requester_phone: z.string().regex(/^05\d{8}$/, "اكتب رقم جوالك بصيغة 05xxxxxxxx."),
+      requester_email: z.union([z.literal(""), z.string().trim().toLowerCase().email("البريد الإلكتروني غير صحيح.").max(200)]),
       requester_role: z.enum(["landlord", "landlord_agent", "tenant"], { message: "حدد صفتك في العقد." }),
       contract_kind: z.enum(["residential", "commercial"], { message: "اختر نوع العقد: سكني أو تجاري." }),
       is_renewal: z.boolean(),
@@ -66,6 +68,9 @@ export async function createContractRequest(_: ActionState | null, fd: FormData)
       notes: z.string().trim().max(2000),
     })
     .safeParse({
+      requester_name: str(fd.get("requester_name")),
+      requester_phone: normalizeDigits(fd.get("requester_phone")),
+      requester_email: str(fd.get("requester_email")),
       requester_role: str(fd.get("requester_role")) || undefined,
       contract_kind: str(fd.get("contract_kind")) || undefined,
       is_renewal: fd.get("is_renewal") === "yes",
@@ -74,7 +79,7 @@ export async function createContractRequest(_: ActionState | null, fd: FormData)
       deed_number: normalizeDigits(fd.get("deed_number")),
       unit_details: str(fd.get("unit_details")),
       other_party_name: hasOther ? str(fd.get("other_party_name")) : "",
-      other_party_phone: hasOther ? phone : "",
+      other_party_phone: hasOther ? normalizeDigits(fd.get("other_party_phone")) : "",
       annual_rent: optionalNumber(fd.get("annual_rent")) ?? undefined,
       payment_frequency: str(fd.get("payment_frequency")) || undefined,
       deposit: optionalNumber(fd.get("deposit")),
@@ -84,58 +89,72 @@ export async function createContractRequest(_: ActionState | null, fd: FormData)
     });
   if (!parsed.success) return { error: firstIssue(parsed.error) };
   const d = parsed.data;
-
   if (hasOther && (d.other_party_name.length < 2 || !d.other_party_phone))
     return { error: "اكتب اسم الطرف الآخر ورقم جواله، أو اختر \"لم نتفق بعد\"." };
-  const today = riyadhToday();
-  const minStart = new Date(`${today}T00:00:00Z`);
-  minStart.setUTCDate(minStart.getUTCDate() - 60);
-  if (d.start_date < minStart.toISOString().slice(0, 10)) return { error: "تاريخ البداية قديم جداً. لتوثيق عقد سابق تواصل مع المكتب مباشرة." };
 
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("contract_requests")
-    .insert({
-      ...d,
-      deed_number: d.deed_number || null,
-      unit_details: d.unit_details || null,
-      other_party_name: d.other_party_name || null,
-      other_party_phone: d.other_party_phone || null,
-      notes: d.notes || null,
-    })
-    .select("id, ref_no")
-    .single();
-  if (error) {
-    console.error("[contract:create]", error.message);
-    return { error: dbError(error.message) };
+  const { data, error } = await supabase.rpc("submit_contract_request", {
+    p_requester_name: d.requester_name,
+    p_requester_phone: d.requester_phone,
+    p_requester_email: d.requester_email,
+    p_requester_role: d.requester_role,
+    p_contract_kind: d.contract_kind,
+    p_is_renewal: d.is_renewal,
+    p_property_type: d.property_type,
+    p_district: d.district,
+    p_deed_number: d.deed_number,
+    p_unit_details: d.unit_details,
+    p_other_party_name: d.other_party_name,
+    p_other_party_phone: d.other_party_phone,
+    p_annual_rent: d.annual_rent,
+    p_payment_frequency: d.payment_frequency,
+    p_deposit: d.deposit,
+    p_start_date: d.start_date,
+    p_duration_months: d.duration_months,
+    p_notes: d.notes,
+  });
+  const row = (data as { request_id: string; request_ref: number }[] | null)?.[0];
+  if (error || !row) {
+    console.error("[contract:create]", error?.message);
+    return { error: dbError(error?.message) };
   }
 
   after(async () => {
     await sendMail({
       to: officeEmail(),
-      subject: `طلب توثيق عقد إيجار جديد رقم ${data.ref_no}`,
+      subject: `طلب توثيق عقد إيجار جديد رقم ${row.request_ref}`,
       heading: "طلب توثيق عقد إيجار بانتظار الإسناد",
       lines: [
-        `مقدم الطلب: ${user.profile.full_name} (${CONTRACT_PARTY_LABEL[d.requester_role]}) — ${user.profile.phone}`,
+        `مقدم الطلب: ${d.requester_name} (${CONTRACT_PARTY_LABEL[d.requester_role]}) — ${d.requester_phone}${user ? "" : " — بدون حساب"}`,
         `العقد: ${CONTRACT_KIND_LABEL[d.contract_kind]}${d.is_renewal ? " (تجديد)" : ""}، حي ${d.district}`,
         `الإيجار السنوي: ${formatPrice(d.annual_rent)}، المدة: ${durationLabel(d.duration_months)}، البداية: ${formatPlainDate(d.start_date)}`,
       ],
-      action: { label: "افتح الطلب", path: `/dashboard/contracts/${data.id}` },
+      action: { label: "افتح الطلب", path: `/dashboard/contracts/${row.request_id}` },
     });
     await sendMail({
-      to: user.email,
-      subject: `استلمنا طلب توثيق عقد الإيجار (رقم ${data.ref_no})`,
+      to: d.requester_email || user?.email,
+      subject: `استلمنا طلب توثيق عقد الإيجار (رقم ${row.request_ref})`,
       heading: "استلمنا طلبك",
       lines: [
-        `رقم الطلب: ${data.ref_no}`,
-        "سيتواصل معك أحد الوسطاء لاستكمال البيانات، ثم ننشئ العقد في منصة إيجار ويصل للطرفين رابط الموافقة.",
+        `رقم الطلب: ${row.request_ref}`,
+        `سيتواصل معك أحد الوسطاء على ${d.requester_phone} لاستكمال البيانات، ثم ننشئ العقد في منصة إيجار ويصل للطرفين رابط الموافقة.`,
       ],
-      action: { label: "تابع الطلب", path: `/account/contracts/${data.id}` },
+      action: user ? { label: "تابع الطلب", path: `/account/contracts/${row.request_id}` } : undefined,
     });
   });
 
   refresh();
-  redirect(`/account/contracts/${data.id}?new=1`);
+  if (user) redirect(`/account/contracts/${row.request_id}?new=1`);
+  return {
+    ok: true,
+    message: `استلمنا طلبك برقم ${row.request_ref}. سيتواصل معك أحد الوسطاء على ${d.requester_phone}${d.requester_email ? "، وتصلك التحديثات على بريدك" : ""}.`,
+  };
+}
+
+/** بريد مقدم الطلب: المسجّل في الطلب أولاً، ثم بريد حسابه */
+async function requesterEmail(c: { requester_email: string | null; submitter_id: string | null } | null) {
+  if (!c) return null;
+  return c.requester_email ?? (await getProfileEmail(c.submitter_id));
 }
 
 // =============================================================
@@ -206,11 +225,11 @@ export async function setContractStatus(_: ActionState | null, fd: FormData): Pr
 
   const visible = !d.internal || d.status === "documented" || d.status === "cancelled";
   if (visible) {
-    const { data: c } = await supabase.from("contract_requests").select("ref_no, submitter_id").eq("id", d.contract_id).single();
+    const { data: c } = await supabase.from("contract_requests").select("ref_no, submitter_id, requester_email").eq("id", d.contract_id).single();
     const s = d.status as ContractStatus;
     after(async () => {
       await sendMail({
-        to: await getProfileEmail(c?.submitter_id),
+        to: await requesterEmail(c),
         subject: `تحديث على طلب توثيق العقد رقم ${c?.ref_no}: ${CONTRACT_STATUS_LABEL[s]}`,
         heading: `حالة طلبك الآن: ${CONTRACT_STATUS_LABEL[s]}`,
         lines: [
@@ -237,10 +256,10 @@ export async function addContractNote(_: ActionState | null, fd: FormData): Prom
   const { error } = await supabase.rpc("add_contract_note", { p_contract: id.data, p_note: note.slice(0, 1000), p_internal: internal });
   if (error) return { error: dbError(error.message) };
   if (!internal) {
-    const { data: c } = await supabase.from("contract_requests").select("ref_no, submitter_id").eq("id", id.data).single();
+    const { data: c } = await supabase.from("contract_requests").select("ref_no, submitter_id, requester_email").eq("id", id.data).single();
     after(async () => {
       await sendMail({
-        to: await getProfileEmail(c?.submitter_id),
+        to: await requesterEmail(c),
         subject: `رسالة من المكتب بخصوص طلب توثيق العقد رقم ${c?.ref_no}`,
         heading: "رسالة جديدة على طلبك",
         lines: [note],
