@@ -88,6 +88,7 @@
    - `supabase/migrations/20261023000000_init.sql`: الجداول والصلاحيات والتخزين. يعمل كمعاملة واحدة، فإن فشل لا يترك شيئاً نصف مطبّق.
    - `supabase/migrations/20261023000100_hardening.sql`: تشديد الصلاحيات بعد فحص Supabase الأمني.
    - `supabase/migrations/20261023000200_districts.sql`: قائمة الأحياء القابلة للتعديل من لوحة المكتب.
+   - `supabase/migrations/20261023000300_revoke_defaults.sql`: سحب صلاحيات افتراضية غير مستخدمة.
 3. من **Project Settings → API Keys** انسخ القيم الثلاث:
    - `Project URL`
    - `Publishable key`
