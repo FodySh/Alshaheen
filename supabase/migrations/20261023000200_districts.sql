@@ -12,6 +12,7 @@ alter table public.districts enable row level security;
 grant select on public.districts to anon, authenticated;
 grant insert, delete on public.districts to authenticated;
 revoke update on public.districts from anon, authenticated;
+revoke insert, delete, truncate on public.districts from anon;
 
 create policy "districts: public read" on public.districts
   for select to anon, authenticated using (true);
