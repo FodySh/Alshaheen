@@ -11,6 +11,9 @@ const STEPS = [
   { title: "ننشر ونتابع", body: "يُنشر العرض وتصلك حالة الطلب أولاً بأول، ونستقبل الاستفسارات ونرتب المعاينات." },
 ];
 
+/** تأخير التتابع لحركات الدخول (globals.css) */
+const stagger = (i: number) => ({ "--i": i }) as React.CSSProperties;
+
 export default async function HomePage() {
   const [{ items }, districts] = await Promise.all([getLiveListings({ page: 1 }), getDistricts()]);
   const latest = items.slice(0, 6);
@@ -21,7 +24,7 @@ export default async function HomePage() {
       <section className="relative overflow-hidden border-b border-sand-deep bg-sand">
         <div
           aria-hidden
-          className="absolute inset-0 opacity-70"
+          className="motion-stone absolute inset-0 opacity-70"
           style={{
             backgroundImage:
               "repeating-linear-gradient(to bottom, transparent 0, transparent 63px, var(--color-sand-deep) 63px, var(--color-sand-deep) 64px)",
@@ -30,17 +33,20 @@ export default async function HomePage() {
         <div className="relative mx-auto grid max-w-6xl items-end gap-10 px-4 pt-12 pb-10 md:grid-cols-12 md:pt-16 md:pb-0">
           <div className="md:col-span-7 md:pb-16">
             <h1 className="font-display text-[2.4rem] leading-[1.25] font-bold text-ink sm:text-5xl sm:leading-[1.2]">
-              عقارات جدة،
-              <br />
-              بإدارة تعرف أحياءها
+              <span className="motion-line -my-1 block overflow-hidden py-1" style={stagger(0)}>
+                <span>عقارات جدة،</span>
+              </span>
+              <span className="motion-line -my-1 block overflow-hidden py-1" style={stagger(1)}>
+                <span>بإدارة تعرف أحياءها</span>
+              </span>
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-ink-soft">
+            <p style={stagger(1)} className="motion-rise mt-5 max-w-xl text-lg leading-8 text-ink-soft">
               شقق وفلل وأراضٍ ومحلات وعمائر للبيع والإيجار، كل عرض منشور بترخيص إعلان ساري. احجز موعد المعاينة مباشرة من صفحة العقار.
             </p>
-            <div className="mt-8 max-w-3xl">
+            <div style={stagger(2)} className="motion-rise mt-8 max-w-3xl">
               <QuickSearch districts={districts} />
             </div>
-            <p className="mt-5 text-sm text-ink-soft">
+            <p style={stagger(3)} className="motion-rise mt-5 text-sm text-ink-soft">
               عندك عقار تريد بيعه أو تأجيره؟{" "}
               <Link href="/submit" className="font-semibold text-olive-deep underline decoration-olive/40 underline-offset-4 hover:decoration-olive">
                 اعرضه علينا
@@ -48,7 +54,7 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="hidden justify-center md:col-span-5 md:flex">
-            <Roshan className="h-[26rem] w-auto drop-shadow-[0_18px_0_rgba(43,33,24,0.08)] lg:h-[30rem]" />
+            <Roshan className="motion-roshan h-[26rem] w-auto drop-shadow-[0_18px_0_rgba(43,33,24,0.08)] lg:h-[30rem]" />
           </div>
         </div>
       </section>
@@ -66,8 +72,8 @@ export default async function HomePage() {
         </div>
         {latest.length > 0 ? (
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {latest.map((l) => (
-              <ListingCard key={l.id} l={l} />
+            {latest.map((l, i) => (
+              <ListingCard key={l.id} l={l} reveal={i % 3} />
             ))}
           </div>
         ) : (
@@ -96,8 +102,9 @@ export default async function HomePage() {
           </div>
           <ol className="grid gap-px overflow-hidden rounded-lg border border-sand-deep bg-sand-deep sm:grid-cols-2 lg:col-span-8">
             {STEPS.map((s, i) => (
-              <li key={s.title} className="bg-white p-6">
-                <span className="font-display text-3xl font-bold text-olive/80 num">{i + 1}</span>
+              <li key={s.title} style={stagger(i % 2)} className="motion-reveal relative bg-white p-6 transition-colors hover:bg-paper">
+                <span aria-hidden className="reveal-bar absolute inset-x-0 top-0 h-[3px] origin-right bg-olive" style={stagger(i)} />
+                <span className="reveal-count inline-block font-display text-3xl font-bold text-olive/80 num">{i + 1}</span>
                 <h3 className="mt-2 font-semibold">{s.title}</h3>
                 <p className="mt-1.5 text-sm leading-7 text-ink-soft">{s.body}</p>
               </li>

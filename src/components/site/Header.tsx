@@ -14,12 +14,12 @@ const NAV = [
 
 export function Header() {
   return (
-    <header className="border-b border-sand-deep bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/80 sticky top-0 z-30">
+    <header className="motion-header border-b border-sand-deep bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/80 sticky top-0 z-30">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:h-[4.5rem]">
         <Wordmark />
         <nav aria-label="الرئيسية" className="hidden flex-1 items-center gap-1 md:flex">
           {NAV.map((n) => (
-            <Link key={n.href} href={n.href} className="rounded px-3 py-2 text-[0.95rem] font-medium text-ink-soft hover:bg-sand hover:text-ink">
+            <Link key={n.href} href={n.href} className="nav-link rounded px-3 py-2 text-[0.95rem] font-medium text-ink-soft hover:bg-sand hover:text-ink">
               {n.label}
             </Link>
           ))}
