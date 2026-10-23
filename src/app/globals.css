@@ -323,6 +323,11 @@ h3 {
     transform: scaleX(1);
   }
 }
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
 @keyframes count-pop {
   0% {
     opacity: 0;
@@ -489,6 +494,33 @@ h3 {
     }
     .motion-reveal .reveal-bar {
       animation-range: entry 60% cover 40%;
+    }
+  }
+}
+
+/* تقليل الحركة: ظهور تدريجي خفيف بالشفافية فقط، بلا انزلاق ولا تكبير.
+   !important لتتغلب على قاعدة * أعلى الملف (المحدِّد هنا أخص). */
+@media (prefers-reduced-motion: reduce) {
+  .motion-header,
+  .motion-line > span,
+  .motion-rise,
+  .motion-roshan,
+  .motion-reveal {
+    animation-name: fade-in;
+    animation-duration: 400ms !important;
+    animation-delay: calc(var(--i, 0) * 60ms) !important;
+    animation-timing-function: ease-out;
+    animation-fill-mode: backwards;
+  }
+  .motion-rise,
+  .motion-roshan {
+    animation-delay: calc(150ms + var(--i, 0) * 60ms) !important;
+  }
+  @supports (animation-timeline: view()) {
+    .motion-reveal {
+      animation-delay: 0ms !important;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
     }
   }
 }
