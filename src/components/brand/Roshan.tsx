@@ -2,15 +2,33 @@
  * روشان جدّاوي مرسوم: تاج، شبكة مشربية معيّنة، حزام منقوش، دِرف بشرائح أفقية، وكابولي.
  * مطلي بالزيتي على ضوء رملي — العنصر البصري المميز للهوية.
  * مع الصنف motion-roshan: يسقط التاج، تنفتح دِرف الشبكة، ويمر ضوء عبر المشربية (globals.css).
+ * id: بادئة فريدة لمعرّفات الأنماط عند رسم أكثر من روشان في الصفحة.
+ * delay: تأخير حركة هذا الروشان بالميلي ثانية، لتتابع عدة رواشين.
+ * decorative: يخفيه عن قارئات الشاشة حين يتكرر الروشان.
  */
-export function Roshan({ className }: { className?: string }) {
+export function Roshan({
+  className,
+  id = "roshan",
+  delay = 0,
+  decorative = false,
+}: {
+  className?: string;
+  id?: string;
+  delay?: number;
+  decorative?: boolean;
+}) {
   const wood = "var(--color-olive)";
   const woodDeep = "var(--color-olive-deep)";
   const light = "var(--color-paper)";
   return (
-    <svg viewBox="0 0 300 470" className={className} role="img" aria-label="روشان من جدة التاريخية">
+    <svg
+      viewBox="0 0 300 470"
+      className={className}
+      style={{ "--roshan-delay": `${delay}ms` } as React.CSSProperties}
+      {...(decorative ? { "aria-hidden": true } : { role: "img", "aria-label": "روشان من جدة التاريخية" })}
+    >
       <defs>
-        <pattern id="mashrabiya" width="18" height="18" patternUnits="userSpaceOnUse">
+        <pattern id={`${id}-lattice`} width="18" height="18" patternUnits="userSpaceOnUse">
           <rect width="18" height="18" fill={light} />
           <path d="M0 0 18 18M18 0 0 18" stroke={wood} strokeWidth="3.2" />
           <circle cx="9" cy="9" r="2.4" fill={wood} />
@@ -19,16 +37,16 @@ export function Roshan({ className }: { className?: string }) {
           <circle cx="0" cy="18" r="2.4" fill={wood} />
           <circle cx="18" cy="18" r="2.4" fill={wood} />
         </pattern>
-        <pattern id="louvers" width="10" height="9" patternUnits="userSpaceOnUse">
+        <pattern id={`${id}-louvers`} width="10" height="9" patternUnits="userSpaceOnUse">
           <rect width="10" height="9" fill={wood} />
           <rect y="5.5" width="10" height="2" fill={woodDeep} />
         </pattern>
-        <clipPath id="roshan-openings">
+        <clipPath id={`${id}-openings`}>
           {[0, 1, 2].map((i) => (
             <rect key={i} x={36 + i * 80} y="62" width="68" height="196" />
           ))}
         </clipPath>
-        <linearGradient id="roshan-light">
+        <linearGradient id={`${id}-light`}>
           <stop offset="0" stopColor="#fff6dc" stopOpacity="0" />
           <stop offset="0.5" stopColor="#fff6dc" stopOpacity="0.75" />
           <stop offset="1" stopColor="#fff6dc" stopOpacity="0" />
@@ -56,10 +74,10 @@ export function Roshan({ className }: { className?: string }) {
 
       {/* الشبكة العلوية: ثلاث فتحات */}
       {[0, 1, 2].map((i) => (
-        <rect key={i} x={36 + i * 80} y="62" width="68" height="196" fill="url(#mashrabiya)" />
+        <rect key={i} x={36 + i * 80} y="62" width="68" height="196" fill={`url(#${id}-lattice)`} />
       ))}
-      <g clipPath="url(#roshan-openings)">
-        <rect className="roshan-light" x="0" y="40" width="70" height="240" fill="url(#roshan-light)" />
+      <g clipPath={`url(#${id}-openings)`}>
+        <rect className="roshan-light" x="0" y="40" width="70" height="240" fill={`url(#${id}-light)`} />
       </g>
 
       {/* دِرف الشبكة: مطوية على الجانبين */}
@@ -74,7 +92,7 @@ export function Roshan({ className }: { className?: string }) {
             y="62"
             width="34"
             height="196"
-            fill="url(#louvers)"
+            fill={`url(#${id}-louvers)`}
             stroke={woodDeep}
             strokeWidth="2"
           />
@@ -90,7 +108,7 @@ export function Roshan({ className }: { className?: string }) {
       {/* الدِّرف السفلية */}
       {[0, 1, 2].map((i) => (
         <g key={i}>
-          <rect x={36 + i * 80} y="304" width="68" height="96" fill="url(#louvers)" />
+          <rect x={36 + i * 80} y="304" width="68" height="96" fill={`url(#${id}-louvers)`} />
           <rect x={36 + i * 80} y="304" width="68" height="96" fill="none" stroke={woodDeep} strokeWidth="3" />
         </g>
       ))}
