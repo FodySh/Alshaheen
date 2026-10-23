@@ -73,3 +73,15 @@ export const MenuIcon = ({ className }: P) => (
     <path d="M4 7h16M4 12h16M4 17h16" />
   </svg>
 );
+/** سهم يشير لليمين (السابق في الواجهة العربية) */
+export const ChevronRightIcon = ({ className }: P) => (
+  <svg {...base(className)}>
+    <path d="m9 6 6 6-6 6" />
+  </svg>
+);
+/** سهم يشير لليسار (التالي في الواجهة العربية) */
+export const ChevronLeftIcon = ({ className }: P) => (
+  <svg {...base(className)}>
+    <path d="m15 6-6 6 6 6" />
+  </svg>
+);

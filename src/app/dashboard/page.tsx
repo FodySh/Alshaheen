@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { CalendarIcon } from "@/components/icons";
 import { StatusBadge } from "@/components/StatusBadge";
 import { isAdmin, requireStaff } from "@/lib/auth";
 import { PROPERTY_TYPE_LABEL, PURPOSE_LABEL, REQUEST_STATUS_LABEL, REQUEST_TONE } from "@/lib/constants";
@@ -77,7 +78,15 @@ export default async function DashboardHome() {
 
   return (
     <div>
-      <PageHeader title={`أهلاً ${user.profile.full_name.split(" ")[0] || ""}`} lead={admin ? "ملخص المكتب اليوم" : "ملخص أعمالك اليوم"} />
+      <PageHeader
+        title={`أهلاً ${user.profile.full_name.split(" ")[0] || ""}`}
+        lead={admin ? "ملخص المكتب اليوم" : "ملخص أعمالك اليوم"}
+        actions={
+          <Link href="/dashboard/calendar" className="btn btn-secondary">
+            <CalendarIcon /> التقويم
+          </Link>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Stat label={admin ? "طلبات بانتظار الإسناد" : "طلباتي قيد العمل"} value={reqs.count ?? 0} href="/dashboard/requests" tone="clay" />
@@ -89,7 +98,7 @@ export default async function DashboardHome() {
       {expiringList.length > 0 && (
         <section className="mt-6 rounded-lg border border-clay/30 bg-clay-tint/60 p-4" aria-labelledby="exp-h">
           <h2 id="exp-h" className="font-semibold text-clay">تراخيص إعلان تنتهي خلال 7 أيام</h2>
-          <p className="mt-1 text-sm text-ink-soft">يُخفى العرض تلقائياً عن الزوار في يوم انتهاء ترخيصه. جدّد الترخيص وحدّث تاريخه.</p>
+          <p className="mt-1 text-sm text-ink-soft">يُخفى العرض تلقائياً عن الزوار بعد يوم انتهاء ترخيصه. جدّد الترخيص وحدّث تاريخه.</p>
           <ul className="mt-3 grid gap-1">
             {expiringList.map((l) => {
               const d = daysUntil(l.ad_license_expiry);

@@ -19,6 +19,9 @@
   --color-clay-tint: #f3e3da;
   --color-danger: #9b2c2c;
   --color-danger-tint: #f6e1e1;
+  /* البحر الأحمر: لون ثالث للتقويم يميز تراخيص الإعلان */
+  --color-sea: #2f5f6b;
+  --color-sea-tint: #dde9ec;
 
   --font-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
   --font-display: "Reem Kufi", "IBM Plex Sans Arabic", sans-serif;

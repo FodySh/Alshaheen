@@ -29,6 +29,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const items: NavItem[] = [
     { href: "/dashboard", label: "نظرة عامة" },
+    { href: "/dashboard/calendar", label: "التقويم" },
     { href: "/dashboard/requests", label: "طلبات التسويق", count: newRequests ?? 0 },
     { href: "/dashboard/listings", label: "العروض" },
     { href: "/dashboard/contracts", label: "عقود الإيجار", count: openContracts ?? 0 },
@@ -61,8 +62,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
         </div>
       </header>
-      <div className="mx-auto grid w-full max-w-7xl flex-1 gap-6 px-4 py-6 lg:grid-cols-[13rem_1fr]">
-        <aside className="lg:sticky lg:top-6 lg:h-fit">
+      <div className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[13rem_1fr]">
+        <aside className="min-w-0 lg:sticky lg:top-6 lg:h-fit">
           <DashNav items={items} />
         </aside>
         <main id="main" className="min-w-0">{children}</main>
