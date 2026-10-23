@@ -28,6 +28,11 @@
 
   --radius-card: 0.5rem;
   --radius-control: 0.375rem;
+
+  /* الحركة: هادئة، تشبه فتح الروشان */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
 }
 
 :root {
@@ -68,6 +73,8 @@ h3 {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
@@ -86,8 +93,16 @@ h3 {
     font-size: 0.95rem;
     line-height: 1.4;
     white-space: nowrap;
-    transition: background-color 120ms, border-color 120ms, color 120ms;
+    transition:
+      background-color 120ms,
+      border-color 120ms,
+      color 120ms,
+      box-shadow 200ms,
+      transform 120ms var(--ease-out);
     cursor: pointer;
+  }
+  .btn:active:not(:disabled) {
+    transform: scale(0.97);
   }
   .btn:disabled,
   .btn[aria-disabled="true"] {
@@ -100,6 +115,7 @@ h3 {
   }
   .btn-primary:hover:not(:disabled) {
     background: var(--color-olive-deep);
+    box-shadow: 0 6px 16px rgb(60 74 33 / 0.22);
   }
   .btn-secondary {
     background: transparent;
@@ -157,7 +173,7 @@ h3 {
     border-radius: var(--radius-control);
     font-size: 1rem;
     color: var(--color-ink);
-    transition: border-color 120ms;
+    transition: border-color 120ms, box-shadow 220ms var(--ease-out);
   }
   .field:hover {
     border-color: var(--color-ink-soft);
@@ -220,5 +236,257 @@ h3 {
 
   .num {
     font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ===== الحركة =====
+  المدد: 120ms للضغط والألوان، 240ms للقوائم والحقول، 640ms لدخول المحتوى، 900ms للروشان فقط.
+  التتابع عبر المتغير --i على العنصر (فارق 80–120ms).
+  حركات الدخول كلها داخل no-preference، فمن فعّل «تقليل الحركة» يرى الصفحة ثابتة.
+*/
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes line-up {
+  from {
+    transform: translateY(105%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes header-in {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes roshan-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes shutter-open {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0.08);
+  }
+}
+@keyframes light-sweep {
+  from {
+    transform: translateX(-120px) skewX(-18deg);
+  }
+  to {
+    transform: translateX(360px) skewX(-18deg);
+  }
+}
+@keyframes stone-drift {
+  to {
+    background-position: 0 64px;
+  }
+}
+@keyframes fill-in {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes count-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@layer components {
+  /* دِرف الروشان: مفتوحة في حالتها الساكنة، وتنغلق ثم تنفتح عند الدخول */
+  .roshan-shutter {
+    transform-box: fill-box;
+    transform: scaleX(0.08);
+  }
+  .roshan-shutter[data-side="start"] {
+    transform-origin: left center;
+  }
+  .roshan-shutter[data-side="end"] {
+    transform-origin: right center;
+  }
+  .roshan-crown {
+    transform-box: fill-box;
+  }
+  .roshan-light {
+    transform: translateX(-120px) skewX(-18deg);
+  }
+
+  /* روابط القائمة: خط زيتي يمتد من اليمين */
+  .nav-link {
+    position: relative;
+    transition: color 160ms, background-color 160ms;
+  }
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0.75rem;
+    bottom: 0.25rem;
+    height: 2px;
+    background: var(--color-olive);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 260ms var(--ease-out);
+  }
+  .nav-link:hover::after {
+    transform: scaleX(1);
+  }
+
+  /* البحث السريع يرتفع قليلاً أثناء الكتابة */
+  .search-lift {
+    transition: box-shadow 300ms var(--ease-out), transform 300ms var(--ease-out);
+  }
+  .search-lift:focus-within {
+    box-shadow: 0 18px 40px rgb(43 33 24 / 0.1);
+    transform: translateY(-2px);
+  }
+
+  /* بطاقة العرض */
+  .listing-card {
+    transition:
+      transform 320ms var(--ease-out),
+      box-shadow 320ms var(--ease-out),
+      border-color 200ms;
+  }
+  .listing-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 36px rgb(43 33 24 / 0.1);
+  }
+  .listing-card .card-media {
+    transition: transform 600ms var(--ease-out), opacity 300ms;
+  }
+  .listing-card:hover .card-media {
+    transform: scale(1.04);
+  }
+  .listing-card .card-mark {
+    opacity: 0.4;
+    transition: transform 500ms var(--ease-out), opacity 300ms;
+  }
+  .listing-card:hover .card-mark {
+    transform: translateY(-6px) scale(1.06);
+    opacity: 0.6;
+  }
+  .listing-card .card-tag {
+    transition: transform 260ms var(--ease-spring);
+  }
+  .listing-card:hover .card-tag {
+    transform: translateY(-2px);
+  }
+  .listing-card .card-title {
+    background-image: linear-gradient(var(--color-stone), var(--color-stone));
+    background-size: 0 1px;
+    background-position: 100% 100%;
+    background-repeat: no-repeat;
+    transition: background-size 360ms var(--ease-out);
+  }
+  .listing-card:hover .card-title {
+    background-size: 100% 1px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .motion-header {
+    animation: header-in 520ms var(--ease-out) both;
+  }
+  .motion-line > span {
+    display: inline-block;
+    animation: line-up 760ms var(--ease-out) both;
+    animation-delay: calc(200ms + var(--i, 0) * 110ms);
+  }
+  .motion-rise {
+    animation: rise 640ms var(--ease-out) both;
+    animation-delay: calc(360ms + var(--i, 0) * 90ms);
+  }
+  .motion-stone {
+    animation: stone-drift 14s linear infinite;
+  }
+
+  .motion-roshan {
+    animation: roshan-in 900ms var(--ease-out) 150ms both;
+  }
+  .motion-roshan .roshan-crown {
+    animation: drop 420ms var(--ease-spring) both;
+    animation-delay: calc(600ms + var(--i, 0) * 45ms);
+  }
+  .motion-roshan .roshan-shutter {
+    animation: shutter-open 900ms var(--ease-in-out) both;
+    animation-delay: calc(1150ms + var(--i, 0) * 140ms);
+  }
+  .motion-roshan .roshan-light {
+    animation: light-sweep 2400ms var(--ease-in-out) 2000ms both;
+  }
+
+  /* أسفل الصفحة: تظهر العناصر عند وصولها للشاشة، أو بعد التحميل في المتصفحات الأقدم.
+     backwards لا both: حتى لا تبقى قيمة transform بعد الحركة فتلغي رفع البطاقة عند التمرير */
+  .motion-reveal {
+    animation: rise 620ms var(--ease-out) backwards;
+    animation-delay: calc(500ms + var(--i, 0) * 80ms);
+  }
+  .motion-reveal .reveal-count {
+    animation: count-pop 520ms var(--ease-spring) backwards;
+    animation-delay: calc(650ms + var(--i, 0) * 120ms);
+  }
+  .motion-reveal .reveal-bar {
+    animation: fill-in 700ms var(--ease-in-out) backwards;
+    animation-delay: calc(900ms + var(--i, 0) * 260ms);
+  }
+  @supports (animation-timeline: view()) {
+    .motion-reveal,
+    .motion-reveal .reveal-count,
+    .motion-reveal .reveal-bar {
+      animation-delay: 0ms;
+      animation-timeline: view();
+    }
+    .motion-reveal {
+      animation-range: entry 0% entry calc(70% + var(--i, 0) * 6%);
+    }
+    .motion-reveal .reveal-count {
+      animation-range: entry 30% entry 100%;
+    }
+    .motion-reveal .reveal-bar {
+      animation-range: entry 60% cover 40%;
+    }
   }
 }

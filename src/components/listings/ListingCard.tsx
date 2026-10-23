@@ -6,30 +6,32 @@ import { publicImageUrl } from "@/lib/supabase/env";
 import { AreaIcon, BathIcon, BedIcon, PinIcon } from "../icons";
 import { RoshanMark } from "../brand/Roshan";
 
-export function ListingCard({ l }: { l: ListingCardData }) {
+/** reveal: ترتيب البطاقة في صفها، يفعّل حركة الظهور المتتابع */
+export function ListingCard({ l, reveal }: { l: ListingCardData; reveal?: number }) {
   const img = publicImageUrl(l.cover_image_path);
   return (
     <Link
       href={`/listings/${l.id}`}
-      className="group flex flex-col overflow-hidden rounded-lg border border-sand-deep bg-white focus-visible:outline-offset-4"
+      style={reveal !== undefined ? ({ "--i": reveal } as React.CSSProperties) : undefined}
+      className={`listing-card group flex flex-col overflow-hidden rounded-lg border border-sand-deep bg-white hover:border-stone focus-visible:outline-offset-4 ${reveal !== undefined ? "motion-reveal" : ""}`}
     >
-      <div className="relative aspect-[4/3] bg-sand">
+      <div className="relative aspect-[4/3] overflow-hidden bg-sand">
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={img} alt="" loading="lazy" className="size-full object-cover" />
+          <img src={img} alt="" loading="lazy" className="card-media size-full object-cover" />
         ) : (
           <div className="flex size-full items-center justify-center">
-            <RoshanMark className="h-14 w-auto opacity-40" />
+            <RoshanMark className="card-mark h-14 w-auto" />
           </div>
         )}
-        <span className="absolute start-3 top-3 rounded bg-paper px-2 py-0.5 text-xs font-semibold text-ink">
+        <span className="card-tag absolute start-3 top-3 rounded bg-paper px-2 py-0.5 text-xs font-semibold text-ink">
           {PURPOSE_LABEL[l.purpose]}
         </span>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <p className="num text-lg font-bold text-olive-deep">{formatPrice(l.price, l.rent_period)}</p>
-        <h3 className="line-clamp-2 font-semibold leading-7 group-hover:underline group-hover:decoration-stone group-hover:underline-offset-4">
-          {l.title}
+        <h3 className="line-clamp-2 font-semibold leading-7">
+          <span className="card-title">{l.title}</span>
         </h3>
         <p className="flex items-center gap-1.5 text-sm text-ink-soft">
           <PinIcon className="size-4 shrink-0" />

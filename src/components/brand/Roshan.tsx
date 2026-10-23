@@ -1,6 +1,7 @@
 /**
  * روشان جدّاوي مرسوم: تاج، شبكة مشربية معيّنة، حزام منقوش، دِرف بشرائح أفقية، وكابولي.
  * مطلي بالزيتي على ضوء رملي — العنصر البصري المميز للهوية.
+ * مع الصنف motion-roshan: يسقط التاج، تنفتح دِرف الشبكة، ويمر ضوء عبر المشربية (globals.css).
  */
 export function Roshan({ className }: { className?: string }) {
   const wood = "var(--color-olive)";
@@ -22,13 +23,32 @@ export function Roshan({ className }: { className?: string }) {
           <rect width="10" height="9" fill={wood} />
           <rect y="5.5" width="10" height="2" fill={woodDeep} />
         </pattern>
+        <clipPath id="roshan-openings">
+          {[0, 1, 2].map((i) => (
+            <rect key={i} x={36 + i * 80} y="62" width="68" height="196" />
+          ))}
+        </clipPath>
+        <linearGradient id="roshan-light">
+          <stop offset="0" stopColor="#fff6dc" stopOpacity="0" />
+          <stop offset="0.5" stopColor="#fff6dc" stopOpacity="0.75" />
+          <stop offset="1" stopColor="#fff6dc" stopOpacity="0" />
+        </linearGradient>
       </defs>
 
       {/* التاج */}
       <path d="M10 46h280l-14-22H24Z" fill={woodDeep} />
       <rect x="40" y="10" width="220" height="14" fill={wood} />
       {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-        <rect key={i} x={46 + i * 20} y="2" width="10" height="10" fill={woodDeep} />
+        <rect
+          key={i}
+          className="roshan-crown"
+          style={{ "--i": i } as React.CSSProperties}
+          x={46 + i * 20}
+          y="2"
+          width="10"
+          height="10"
+          fill={woodDeep}
+        />
       ))}
 
       {/* الجسم */}
@@ -38,6 +58,28 @@ export function Roshan({ className }: { className?: string }) {
       {[0, 1, 2].map((i) => (
         <rect key={i} x={36 + i * 80} y="62" width="68" height="196" fill="url(#mashrabiya)" />
       ))}
+      <g clipPath="url(#roshan-openings)">
+        <rect className="roshan-light" x="0" y="40" width="70" height="240" fill="url(#roshan-light)" />
+      </g>
+
+      {/* دِرف الشبكة: مطوية على الجانبين */}
+      {[0, 1, 2].map((i) =>
+        (["start", "end"] as const).map((side, j) => (
+          <rect
+            key={`${i}-${side}`}
+            className="roshan-shutter"
+            data-side={side}
+            style={{ "--i": i } as React.CSSProperties}
+            x={36 + i * 80 + j * 34}
+            y="62"
+            width="34"
+            height="196"
+            fill="url(#louvers)"
+            stroke={woodDeep}
+            strokeWidth="2"
+          />
+        )),
+      )}
 
       {/* الحزام المنقوش */}
       <rect x="22" y="270" width="256" height="22" fill={woodDeep} />
