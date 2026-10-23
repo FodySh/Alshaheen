@@ -3,6 +3,7 @@ import { ListingEditor } from "@/components/dashboard/ListingEditor";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { isAdmin, requireStaff } from "@/lib/auth";
 import { riyadhToday } from "@/lib/format";
+import { getDistricts } from "@/lib/data/public";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "عرض جديد" };
@@ -20,7 +21,7 @@ export default async function NewListingPage() {
         <Link href="/dashboard/listings" className="hover:underline">العروض</Link>
       </nav>
       <PageHeader title="عرض جديد" lead="احفظه كمسودة لإضافة الصور، ثم انشره بعد إدخال بيانات الترخيص." />
-      <ListingEditor staff={(staff ?? []) as { id: string; full_name: string }[]} isAdmin={admin} today={riyadhToday()} currentUserId={user.id} />
+      <ListingEditor staff={(staff ?? []) as { id: string; full_name: string }[]} isAdmin={admin} today={riyadhToday()} currentUserId={user.id} districts={await getDistricts()} />
     </div>
   );
 }

@@ -14,12 +14,14 @@ export function ListingEditor({
   isAdmin,
   today,
   currentUserId,
+  districts,
 }: {
   listing?: Listing;
   staff: { id: string; full_name: string }[];
   isAdmin: boolean;
   today: string;
   currentUserId: string;
+  districts: string[];
 }) {
   const [state, action] = useActionState(saveListing, null);
   const published = listing?.status === "published";
@@ -43,7 +45,7 @@ export function ListingEditor({
 
       <section className="panel grid gap-5 p-5">
         <h2 className="font-semibold">العقار والسعر</h2>
-        <PropertyInputs defaults={listing} priceName="price" priceLabel="السعر" priceDefault={listing?.price} />
+        <PropertyInputs defaults={listing} priceName="price" priceLabel="السعر" priceDefault={listing?.price} districts={districts} />
         <fieldset>
           <legend className="label">المزايا</legend>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">

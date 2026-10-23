@@ -622,3 +622,34 @@ function normalizeOrNull(key: string, v: string) {
   if (!v) return null;
   return ["fal_license_number", "cr_number", "phone", "whatsapp"].includes(key) ? normalizeDigits(v) : v;
 }
+
+// =============================================================
+// الأحياء (المدير)
+// =============================================================
+
+export async function addDistrict(_: ActionState | null, fd: FormData): Promise<ActionState> {
+  const u = await actionUser();
+  if (!isAdmin(u)) return { error: "إدارة الأحياء للمدير فقط." };
+  const name = str(fd.get("name")).replace(/\s+/g, " ");
+  if (name.length < 2 || name.length > 60) return { error: "اكتب اسم الحي (من 2 إلى 60 حرفاً)." };
+  const supabase = await createClient();
+  const { error } = await supabase.from("districts").insert({ name });
+  if (error) {
+    if (error.code === "23505") return { error: `حي "${name}" موجود في القائمة.` };
+    return { error: dbError(error.message) };
+  }
+  updateTag("districts");
+  revalidatePath("/dashboard/settings");
+  return { ok: true, message: `أُضيف حي "${name}".` };
+}
+
+export async function deleteDistrict(fd: FormData) {
+  const u = await actionUser();
+  if (!isAdmin(u)) return;
+  const name = str(fd.get("name"));
+  if (!name) return;
+  const supabase = await createClient();
+  await supabase.from("districts").delete().eq("name", name);
+  updateTag("districts");
+  revalidatePath("/dashboard/settings");
+}

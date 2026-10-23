@@ -121,6 +121,12 @@ export const JEDDAH_DISTRICTS = [
   "مشرفة",
 ];
 
+/** ترتيب الأحياء أبجدياً مع تجاهل "ال" في أول الاسم، ليسهل إيجاد الحي */
+export function sortDistricts(list: string[]) {
+  const key = (n: string) => n.trim().replace(/^ال/, "");
+  return [...new Set(list.map((n) => n.trim()).filter(Boolean))].sort((a, b) => key(a).localeCompare(key(b), "ar"));
+}
+
 export const FEATURES = [
   "مصعد",
   "موقف خاص",

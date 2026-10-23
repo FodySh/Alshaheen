@@ -22,7 +22,7 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
   );
 }
 
-export function SubmitRequestForm({ userId }: { userId: string }) {
+export function SubmitRequestForm({ userId, districts }: { userId: string; districts: string[] }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [capacity, setCapacity] = useState("owner");
@@ -91,7 +91,7 @@ export function SubmitRequestForm({ userId }: { userId: string }) {
       </Section>
 
       <Section title="بيانات العقار">
-        <PropertyInputs priceName="asking_price" priceLabel="السعر المطلوب" />
+        <PropertyInputs priceName="asking_price" priceLabel="السعر المطلوب" districts={districts} />
         <div>
           <label htmlFor="address_note" className="label">وصف الموقع <span className="font-normal text-ink-soft">(اختياري)</span></label>
           <input id="address_note" name="address_note" maxLength={300} className="field" placeholder="مثال: قرب شارع الأمير سلطان، خلف مسجد…" />

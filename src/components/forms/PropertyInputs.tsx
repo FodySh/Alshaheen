@@ -1,19 +1,20 @@
 "use client";
 import { useState } from "react";
-import { FACADES, JEDDAH_DISTRICTS, PROPERTY_GROUPS, PROPERTY_TYPE_LABEL, fieldsFor } from "@/lib/constants";
+import { FACADES, PROPERTY_GROUPS, PROPERTY_TYPE_LABEL, fieldsFor } from "@/lib/constants";
 import type { PropertyFields, PropertyType } from "@/lib/types";
 
 type Defaults = Partial<PropertyFields>;
 
-export function PropertyInputs({ defaults = {}, priceName, priceLabel, priceDefault }: {
+export function PropertyInputs({ defaults = {}, priceName, priceLabel, priceDefault, districts }: {
   defaults?: Defaults;
+  districts: string[];
   priceName: string;
   priceLabel: string;
   priceDefault?: number;
 }) {
   const [type, setType] = useState<PropertyType | "">(defaults.property_type ?? "");
   const [purpose, setPurpose] = useState<string>(defaults.purpose ?? "");
-  const knownDistrict = !defaults.district || JEDDAH_DISTRICTS.includes(defaults.district);
+  const knownDistrict = !defaults.district || districts.includes(defaults.district);
   const [district, setDistrict] = useState(knownDistrict ? (defaults.district ?? "") : "__other");
   const f = fieldsFor(type);
 
@@ -56,7 +57,7 @@ export function PropertyInputs({ defaults = {}, priceName, priceLabel, priceDefa
           <label htmlFor="district" className="label">الحي (جدة)</label>
           <select id="district" name="district" required className="field" value={district} onChange={(e) => setDistrict(e.target.value)}>
             <option value="" disabled>اختر الحي</option>
-            {JEDDAH_DISTRICTS.map((d) => (
+            {districts.map((d) => (
               <option key={d} value={d}>{d}</option>
             ))}
             <option value="__other">حي آخر…</option>

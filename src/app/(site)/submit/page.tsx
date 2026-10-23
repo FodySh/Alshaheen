@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { SubmitRequestForm } from "@/components/forms/SubmitRequestForm";
 import { getSessionUser } from "@/lib/auth";
+import { getDistricts } from "@/lib/data/public";
 
 export const metadata: Metadata = {
   title: "اعرض عقارك",
@@ -59,5 +60,5 @@ async function Gate() {
         </div>
       </div>
     );
-  return <SubmitRequestForm userId={user.id} />;
+  return <SubmitRequestForm userId={user.id} districts={await getDistricts()} />;
 }

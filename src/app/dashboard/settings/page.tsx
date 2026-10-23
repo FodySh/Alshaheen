@@ -1,7 +1,7 @@
-import { SettingsForm } from "@/components/dashboard/AdminForms";
+import { DistrictsManager, SettingsForm } from "@/components/dashboard/AdminForms";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { requireAdmin } from "@/lib/auth";
-import { DEFAULT_SETTINGS } from "@/lib/data/public";
+import { DEFAULT_SETTINGS, getDistricts } from "@/lib/data/public";
 import { createClient } from "@/lib/supabase/server";
 import type { OfficeSettings } from "@/lib/types";
 
@@ -26,6 +26,14 @@ export default async function SettingsPage() {
       )}
       <section className="panel p-5">
         <SettingsForm settings={settings} />
+      </section>
+
+      <section className="panel mt-6 p-5" aria-labelledby="districts-h">
+        <h2 id="districts-h" className="font-semibold">الأحياء</h2>
+        <p className="mt-1 text-sm text-ink-soft">القائمة التي تظهر في البحث، وفي نموذج &quot;اعرض عقارك&quot;، وفي محرر العروض.</p>
+        <div className="mt-4">
+          <DistrictsManager districts={await getDistricts()} />
+        </div>
       </section>
     </div>
   );

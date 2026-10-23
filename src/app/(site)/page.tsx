@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Roshan } from "@/components/brand/Roshan";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { QuickSearch } from "@/components/listings/SearchFields";
-import { getLiveListings } from "@/lib/data/public";
+import { getDistricts, getLiveListings } from "@/lib/data/public";
 
 const STEPS = [
   { title: "ترفع طلب التسويق", body: "بيانات العقار ورقم الصك والصور، من حسابك على المنصة. الطلب لا يظهر لأحد غير المكتب." },
@@ -12,7 +12,7 @@ const STEPS = [
 ];
 
 export default async function HomePage() {
-  const { items } = await getLiveListings({ page: 1 });
+  const [{ items }, districts] = await Promise.all([getLiveListings({ page: 1 }), getDistricts()]);
   const latest = items.slice(0, 6);
 
   return (
@@ -38,7 +38,7 @@ export default async function HomePage() {
               شقق وفلل وأراضٍ ومحلات وعمائر للبيع والإيجار، كل عرض منشور بترخيص إعلان ساري. احجز موعد المعاينة مباشرة من صفحة العقار.
             </p>
             <div className="mt-8 max-w-3xl">
-              <QuickSearch />
+              <QuickSearch districts={districts} />
             </div>
             <p className="mt-5 text-sm text-ink-soft">
               عندك عقار تريد بيعه أو تأجيره؟{" "}

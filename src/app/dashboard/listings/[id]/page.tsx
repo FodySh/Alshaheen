@@ -9,6 +9,7 @@ import { deleteListing, setListingStatus } from "@/lib/actions/staff";
 import { isAdmin, requireStaff } from "@/lib/auth";
 import { LISTING_STATUS_LABEL, LISTING_TONE } from "@/lib/constants";
 import { daysUntil, riyadhToday } from "@/lib/format";
+import { getDistricts } from "@/lib/data/public";
 import { createClient } from "@/lib/supabase/server";
 import type { Listing, ListingImage } from "@/lib/types";
 
@@ -71,7 +72,7 @@ export default async function EditListingPage({
       {canEdit ? (
         <div className="grid gap-6">
           <ImageManager listingId={l.id} images={(imgs ?? []) as ListingImage[]} />
-          <ListingEditor listing={l} staff={(staff ?? []) as { id: string; full_name: string }[]} isAdmin={admin} today={riyadhToday()} currentUserId={user.id} />
+          <ListingEditor listing={l} staff={(staff ?? []) as { id: string; full_name: string }[]} isAdmin={admin} today={riyadhToday()} currentUserId={user.id} districts={await getDistricts()} />
 
           <section className="panel p-5">
             <h2 className="font-semibold">إغلاق العرض</h2>

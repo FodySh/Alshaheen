@@ -1,7 +1,7 @@
 "use client";
 import { ActionForm } from "../forms/ActionForm";
-import { useActionState } from "react";
-import { addStaff, updateComplaint, updateSettings } from "@/lib/actions/staff";
+import { useActionState, useEffect, useRef } from "react";
+import { addDistrict, addStaff, deleteDistrict, updateComplaint, updateSettings } from "@/lib/actions/staff";
 import type { ComplaintStatus, OfficeSettings } from "@/lib/types";
 import { FormMessage } from "../forms/FormMessage";
 import { SubmitButton } from "../forms/SubmitButton";
@@ -82,5 +82,48 @@ export function SettingsForm({ settings }: { settings: OfficeSettings }) {
         <FormMessage state={state} />
       </div>
     </ActionForm>
+  );
+}
+
+export function DistrictsManager({ districts }: { districts: string[] }) {
+  const [state, action] = useActionState(addDistrict, null);
+  const ref = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (state?.ok) ref.current?.reset();
+  }, [state]);
+  return (
+    <div className="grid gap-4">
+      <ActionForm ref={ref} action={action} className="grid gap-2">
+        <label htmlFor="district-name" className="label">أضف حياً</label>
+        <div className="flex max-w-md gap-2">
+          <input id="district-name" name="name" required minLength={2} maxLength={60} className="field" placeholder="مثال: الصفا" />
+          <SubmitButton className="btn btn-secondary" pendingLabel="…">أضف</SubmitButton>
+        </div>
+        <FormMessage state={state} />
+      </ActionForm>
+      <div>
+        <p className="text-sm text-ink-soft">
+          <span className="num">{districts.length}</span> حياً في القائمة. حذف الحي لا يؤثر على العروض والطلبات المسجلة فيه.
+        </p>
+        <ul className="mt-3 flex flex-wrap gap-2">
+          {districts.map((d) => (
+            <li key={d} className="flex items-center gap-1 rounded-md border border-sand-deep bg-white py-1 ps-3 pe-1 text-sm">
+              {d}
+              <form
+                action={deleteDistrict}
+                onSubmit={(e) => {
+                  if (!confirm(`حذف حي "${d}" من القائمة؟`)) e.preventDefault();
+                }}
+              >
+                <input type="hidden" name="name" value={d} />
+                <button type="submit" className="rounded px-1.5 text-ink-soft hover:bg-danger-tint hover:text-danger" aria-label={`احذف حي ${d}`}>
+                  ×
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }

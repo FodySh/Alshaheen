@@ -34,7 +34,7 @@ export function DistrictSelect({ value, id = "district", districts = JEDDAH_DIST
 }
 
 /** نموذج البحث المختصر (الصفحة الرئيسية) */
-export function QuickSearch({ values = {} }: { values?: Values }) {
+export function QuickSearch({ values = {}, districts }: { values?: Values; districts?: string[] }) {
   return (
     <form action="/listings" className="grid gap-3 rounded-lg border border-sand-deep bg-white p-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end sm:p-4">
       <div>
@@ -51,7 +51,7 @@ export function QuickSearch({ values = {} }: { values?: Values }) {
       </div>
       <div>
         <label htmlFor="q-district" className="label">الحي</label>
-        <DistrictSelect id="q-district" value={values.district} />
+        <DistrictSelect id="q-district" value={values.district} districts={districts} />
       </div>
       <button type="submit" className="btn btn-primary sm:min-w-28">ابحث</button>
     </form>

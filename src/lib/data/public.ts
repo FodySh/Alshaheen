@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { createPublicClient } from "../supabase/public";
 import { isSupabaseConfigured } from "../supabase/env";
+import { JEDDAH_DISTRICTS, sortDistricts } from "../constants";
 import type { DealPurpose, Listing, ListingImage, OfficeSettings, PropertyType } from "../types";
 
 export const DEFAULT_SETTINGS: OfficeSettings = {
@@ -27,6 +28,17 @@ export async function getOfficeSettings(): Promise<OfficeSettings> {
     .maybeSingle();
   if (error || !data) return DEFAULT_SETTINGS;
   return data as OfficeSettings;
+}
+
+/** قائمة الأحياء التي يديرها المدير. عند تعذّر القراءة نعود للقائمة الافتراضية. */
+export async function getDistricts(): Promise<string[]> {
+  "use cache";
+  cacheTag("districts");
+  cacheLife("hours");
+  if (!isSupabaseConfigured()) return sortDistricts(JEDDAH_DISTRICTS);
+  const { data, error } = await createPublicClient().from("districts").select("name").limit(1000);
+  if (error || !data || data.length === 0) return sortDistricts(JEDDAH_DISTRICTS);
+  return sortDistricts(data.map((d: { name: string }) => d.name));
 }
 
 export type ListingFilters = {
