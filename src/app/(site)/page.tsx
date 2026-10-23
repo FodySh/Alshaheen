@@ -53,8 +53,14 @@ export default async function HomePage() {
               </Link>
             </p>
           </div>
-          <div className="hidden justify-center md:col-span-5 md:flex">
-            <Roshan className="motion-roshan h-[26rem] w-auto drop-shadow-[0_18px_0_rgba(43,33,24,0.08)] lg:h-[30rem]" />
+          {/* ثلاثة رواشين كواجهة بيت جداوي: الأوسط أمامي وأعلى بحافة رملية تفصله، والجانبيان خلفه وتتابع حركتهما */}
+          <div className="hidden items-end justify-center md:col-span-5 md:flex">
+            <Roshan id="roshan-start" delay={250} decorative className="motion-roshan hidden h-[15.5rem] w-auto lg:block" />
+            <Roshan
+              id="roshan-center"
+              className="motion-roshan relative z-10 h-[24rem] w-auto drop-shadow-[0_18px_0_rgba(43,33,24,0.08)] lg:-mx-11 lg:h-[21rem] lg:[filter:drop-shadow(6px_0_0_var(--color-sand))_drop-shadow(-6px_0_0_var(--color-sand))_drop-shadow(0_18px_0_rgba(43,33,24,0.08))]"
+            />
+            <Roshan id="roshan-end" delay={500} decorative className="motion-roshan hidden h-[15.5rem] w-auto lg:block" />
           </div>
         </div>
       </section>

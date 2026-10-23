@@ -451,18 +451,20 @@ h3 {
   }
 
   .motion-roshan {
-    animation: roshan-in 900ms var(--ease-out) 150ms both;
+    animation: roshan-in 900ms var(--ease-out) both;
+    animation-delay: calc(150ms + var(--roshan-delay, 0ms));
   }
   .motion-roshan .roshan-crown {
     animation: drop 420ms var(--ease-spring) both;
-    animation-delay: calc(600ms + var(--i, 0) * 45ms);
+    animation-delay: calc(600ms + var(--roshan-delay, 0ms) + var(--i, 0) * 45ms);
   }
   .motion-roshan .roshan-shutter {
     animation: shutter-open 900ms var(--ease-in-out) both;
-    animation-delay: calc(1150ms + var(--i, 0) * 140ms);
+    animation-delay: calc(1150ms + var(--roshan-delay, 0ms) + var(--i, 0) * 140ms);
   }
   .motion-roshan .roshan-light {
-    animation: light-sweep 2400ms var(--ease-in-out) 2000ms both;
+    animation: light-sweep 2400ms var(--ease-in-out) both;
+    animation-delay: calc(2000ms + var(--roshan-delay, 0ms));
   }
 
   /* أسفل الصفحة: تظهر العناصر عند وصولها للشاشة، أو بعد التحميل في المتصفحات الأقدم.
@@ -512,9 +514,11 @@ h3 {
     animation-timing-function: ease-out;
     animation-fill-mode: backwards;
   }
-  .motion-rise,
-  .motion-roshan {
+  .motion-rise {
     animation-delay: calc(150ms + var(--i, 0) * 60ms) !important;
+  }
+  .motion-roshan {
+    animation-delay: calc(150ms + var(--roshan-delay, 0ms) / 3) !important;
   }
   @supports (animation-timeline: view()) {
     .motion-reveal {
