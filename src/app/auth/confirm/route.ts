@@ -21,5 +21,7 @@ export async function GET(request: NextRequest) {
     ok = !error;
   }
   if (ok) await markSessionActive();
-  return NextResponse.redirect(new URL(ok ? next : "/login?error=link", origin));
+  // ألغى المستخدم الدخول في صفحة Google، أو رفضه Google
+  const failure = searchParams.get("error") ? `/login?error=google&next=${encodeURIComponent(next)}` : "/login?error=link";
+  return NextResponse.redirect(new URL(ok ? next : failure, origin));
 }

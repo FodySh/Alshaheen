@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { LoginForm } from "@/components/auth/AuthForms";
 import { safeNext } from "@/lib/auth";
+import { isGoogleAuthEnabled } from "@/lib/data/public";
 
 export const metadata: Metadata = { title: "تسجيل الدخول" };
 
@@ -19,10 +20,12 @@ export default function LoginPage({ searchParams }: { searchParams: SP }) {
 }
 
 async function Form({ searchParams }: { searchParams: SP }) {
-  const sp = await searchParams;
+  const [sp, google] = await Promise.all([searchParams, isGoogleAuthEnabled()]);
   const notice =
     sp.error === "link"
       ? "الرابط غير صالح أو انتهت صلاحيته. سجّل الدخول أو اطلب رابطاً جديداً."
+      : sp.error === "google"
+        ? "تعذّر الدخول بحساب Google. حاول مرة أخرى أو ادخل بالبريد وكلمة المرور."
       : sp.expired === "idle"
         ? "انتهت الجلسة بسبب عدم النشاط. سجّل الدخول من جديد."
         : sp.expired === "max_age"
@@ -30,5 +33,5 @@ async function Form({ searchParams }: { searchParams: SP }) {
           : sp.signed_out === "all"
             ? "سُجّل خروجك من كل الأجهزة."
             : undefined;
-  return <LoginForm next={safeNext(sp.next)} notice={notice} />;
+  return <LoginForm next={safeNext(sp.next)} notice={notice} google={google} />;
 }

@@ -17,7 +17,8 @@ const csp = [
   "frame-ancestors 'none'",
   "object-src 'none'",
   "base-uri 'self'",
-  "form-action 'self'",
+  // الدخول بحساب Google: النموذج يُحوَّل إلى Supabase ثم إلى Google
+  `form-action 'self' ${supabase} https://accounts.google.com`,
   ...(isDev ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
