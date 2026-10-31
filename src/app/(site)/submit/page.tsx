@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { SubmitRequestForm } from "@/components/forms/SubmitRequestForm";
-import { getSessionUser } from "@/lib/auth";
+import { getViewer } from "@/lib/auth";
 import { getDistricts } from "@/lib/data/public";
 
 export const metadata: Metadata = {
@@ -48,7 +48,7 @@ export default function SubmitPage() {
 }
 
 async function Gate() {
-  const user = await getSessionUser();
+  const user = await getViewer();
   if (!user)
     return (
       <div className="py-6 text-center">

@@ -20,6 +20,15 @@ export default function LoginPage({ searchParams }: { searchParams: SP }) {
 
 async function Form({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
-  const notice = sp.error === "link" ? "الرابط غير صالح أو انتهت صلاحيته. سجّل الدخول أو اطلب رابطاً جديداً." : undefined;
+  const notice =
+    sp.error === "link"
+      ? "الرابط غير صالح أو انتهت صلاحيته. سجّل الدخول أو اطلب رابطاً جديداً."
+      : sp.expired === "idle"
+        ? "انتهت الجلسة بسبب عدم النشاط. سجّل الدخول من جديد."
+        : sp.expired === "max_age"
+          ? "انتهت مدة الجلسة. سجّل الدخول من جديد."
+          : sp.signed_out === "all"
+            ? "سُجّل خروجك من كل الأجهزة."
+            : undefined;
   return <LoginForm next={safeNext(sp.next)} notice={notice} />;
 }

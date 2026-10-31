@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ContractRequestForm } from "@/components/forms/ContractRequestForm";
-import { getSessionUser } from "@/lib/auth";
+import { getViewer } from "@/lib/auth";
 import { getDistricts, getOfficeSettings } from "@/lib/data/public";
 import { riyadhToday } from "@/lib/format";
 
@@ -78,7 +78,7 @@ async function Fee() {
 }
 
 async function Gate() {
-  const [user, districts] = await Promise.all([getSessionUser(), getDistricts()]);
+  const [user, districts] = await Promise.all([getViewer(), getDistricts()]);
   return (
     <ContractRequestForm
       districts={districts}

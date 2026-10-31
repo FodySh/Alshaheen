@@ -7,7 +7,7 @@ import { BookingPicker, type SlotView } from "@/components/listings/BookingPicke
 import { Gallery } from "@/components/listings/Gallery";
 import { InquiryForm } from "@/components/listings/InquiryForm";
 import { CalendarIcon, ChatIcon, PhoneIcon, PinIcon, WhatsAppIcon } from "@/components/icons";
-import { getSessionUser } from "@/lib/auth";
+import { getViewer } from "@/lib/auth";
 import { PROPERTY_TYPE_LABEL, PURPOSE_LABEL, fieldsFor } from "@/lib/constants";
 import { getLiveListing, getOfficeSettings } from "@/lib/data/public";
 import { formatArea, formatDay, formatNumber, formatPlainDate, formatPrice, formatTime, riyadhDayKey, whatsappLink } from "@/lib/format";
@@ -194,7 +194,7 @@ function LoginPrompt({ listingId, action }: { listingId: string; action: string 
 }
 
 async function BookingSection({ listingId }: { listingId: string }) {
-  const user = await getSessionUser();
+  const user = await getViewer();
   if (!user) return <LoginPrompt listingId={listingId} action="لترى المواعيد المتاحة وتحجز" />;
   const supabase = await createClient();
   const { data } = await supabase.rpc("available_slots", { p_listing: listingId });
@@ -208,7 +208,7 @@ async function BookingSection({ listingId }: { listingId: string }) {
 }
 
 async function InquirySection({ listingId }: { listingId: string }) {
-  const user = await getSessionUser();
+  const user = await getViewer();
   if (!user) return <LoginPrompt listingId={listingId} action="لترسل استفسارك ويصلك الرد" />;
   return <InquiryForm listingId={listingId} />;
 }
