@@ -1,7 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { createPublicClient } from "../supabase/public";
-import { isSupabaseConfigured } from "../supabase/env";
+import { SUPABASE_KEY, SUPABASE_URL, isSupabaseConfigured } from "../supabase/env";
 import { JEDDAH_DISTRICTS, sortDistricts } from "../constants";
 import type { DealPurpose, Listing, ListingImage, OfficeSettings, PropertyType } from "../types";
 
@@ -16,6 +16,21 @@ export const DEFAULT_SETTINGS: OfficeSettings = {
   about: null,
   contract_service_fee: null,
 };
+
+/** هل فُعّل الدخول بحساب Google في Supabase؟ يظهر الزر تلقائياً بعد تفعيله. */
+export async function isGoogleAuthEnabled(): Promise<boolean> {
+  "use cache";
+  cacheLife("minutes");
+  if (!isSupabaseConfigured()) return false;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: SUPABASE_KEY } });
+    if (!res.ok) return false;
+    const settings = (await res.json()) as { external?: Record<string, boolean> };
+    return settings.external?.google === true;
+  } catch {
+    return false;
+  }
+}
 
 export async function getOfficeSettings(): Promise<OfficeSettings> {
   "use cache";

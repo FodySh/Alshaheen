@@ -47,6 +47,21 @@ export async function signIn(_: ActionState | null, fd: FormData): Promise<Actio
   redirect(next);
 }
 
+/** الدخول بحساب Google: يعود المستخدم إلى /auth/confirm ومنه إلى وجهته. الحساب بنفس البريد يُربط تلقائياً. */
+export async function signInWithGoogle(fd: FormData) {
+  const next = safeNext(fd.get("next"));
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${await siteUrl()}/auth/confirm?next=${encodeURIComponent(next)}`,
+      queryParams: { prompt: "select_account" },
+    },
+  });
+  if (error || !data.url) redirect(`/login?error=google&next=${encodeURIComponent(next)}`);
+  redirect(data.url);
+}
+
 export async function signUp(_: ActionState | null, fd: FormData): Promise<ActionState> {
   const parsed = z
     .object({

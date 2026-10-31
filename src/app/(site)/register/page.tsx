@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { RegisterForm } from "@/components/auth/AuthForms";
 import { safeNext } from "@/lib/auth";
+import { isGoogleAuthEnabled } from "@/lib/data/public";
 
 export const metadata: Metadata = { title: "حساب جديد" };
 
@@ -19,6 +20,6 @@ export default function RegisterPage({ searchParams }: { searchParams: SP }) {
 }
 
 async function Form({ searchParams }: { searchParams: SP }) {
-  const sp = await searchParams;
-  return <RegisterForm next={safeNext(sp.next)} />;
+  const [sp, google] = await Promise.all([searchParams, isGoogleAuthEnabled()]);
+  return <RegisterForm next={safeNext(sp.next)} google={google} />;
 }
