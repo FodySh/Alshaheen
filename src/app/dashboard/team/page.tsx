@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { ConfirmForm } from "@/components/forms/ConfirmForm";
 import { SubmitButton } from "@/components/forms/SubmitButton";
 import { StatusBadge } from "@/components/StatusBadge";
+import { resetMemberMfa } from "@/lib/actions/mfa";
 import { updateStaff } from "@/lib/actions/staff";
 import { requireAdmin } from "@/lib/auth";
 import { ROLE_LABEL } from "@/lib/constants";
@@ -21,6 +22,8 @@ export default async function TeamPage() {
     .order("role")
     .order("full_name");
   const staff = (data ?? []) as Profile[];
+  const { data: mfaRows } = await supabase.rpc("staff_mfa_status");
+  const mfa = new Map(((mfaRows ?? []) as { user_id: string; has_totp: boolean }[]).map((r) => [r.user_id, r.has_totp]));
 
   return (
     <div>
@@ -36,6 +39,7 @@ export default async function TeamPage() {
               <th>التواصل</th>
               <th>الصلاحية</th>
               <th>الحالة</th>
+              <th>المصادقة بخطوتين</th>
               <th></th>
             </tr>
           </thead>
@@ -49,6 +53,9 @@ export default async function TeamPage() {
                 </td>
                 <td>{ROLE_LABEL[s.role]}</td>
                 <td><StatusBadge tone={s.is_active ? "olive" : "muted"}>{s.is_active ? "نشط" : "معطّل"}</StatusBadge></td>
+                <td>
+                  <StatusBadge tone={mfa.get(s.id) ? "olive" : "muted"}>{mfa.get(s.id) ? "مفعّلة" : "لم تُفعّل بعد"}</StatusBadge>
+                </td>
                 <td>
                   {s.id !== me.id && (
                     <div className="flex flex-wrap justify-end gap-1">
@@ -64,6 +71,12 @@ export default async function TeamPage() {
                         <input type="hidden" name="active" value={String(!s.is_active)} />
                         <SubmitButton className="btn btn-quiet btn-sm">{s.is_active ? "عطّل" : "فعّل"}</SubmitButton>
                       </form>
+                      {mfa.get(s.id) && (
+                        <ConfirmForm action={resetMemberMfa} message="إعادة ضبط المصادقة بخطوتين؟ يُسجَّل خروجه من كل الأجهزة ويربط تطبيقاً جديداً عند دخوله التالي.">
+                          <input type="hidden" name="user_id" value={s.id} />
+                          <SubmitButton className="btn btn-quiet btn-sm">أعد ضبط المصادقة</SubmitButton>
+                        </ConfirmForm>
+                      )}
                       <ConfirmForm action={updateStaff} message="إزالة الموظف من الفريق؟ يبقى حسابه كزائر.">
                         <input type="hidden" name="user_id" value={s.id} />
                         <input type="hidden" name="role" value="visitor" />
@@ -78,6 +91,7 @@ export default async function TeamPage() {
         </table>
       </div>
       <p className="mt-3 text-sm text-ink-soft">قبل إزالة وسيط، أعد إسناد طلباته وعروضه لغيره.</p>
+      <p className="mt-1 text-sm text-ink-soft">المصادقة بخطوتين إلزامية للفريق: من لم يفعّلها يُطلب منه ربط تطبيق عند دخوله التالي. إن فقد موظف جواله، أعد ضبط مصادقته من هنا.</p>
     </div>
   );
 }

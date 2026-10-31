@@ -1,9 +1,11 @@
 "use server";
 
 import { headers } from "next/headers";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { safeNext } from "../auth";
+import { getSessionUser, markSessionActive, safeNext } from "../auth";
+import { sendMail } from "../email";
 import { createClient } from "../supabase/server";
 import type { ActionState } from "../types";
 
@@ -36,9 +38,13 @@ export async function signIn(_: ActionState | null, fd: FormData): Promise<Actio
   });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) return { error: authError(error.message) };
-  redirect(safeNext(fd.get("next")));
+  await markSessionActive();
+  const next = safeNext(fd.get("next"));
+  const hasMfa = (data.user?.factors ?? []).some((f) => f.factor_type === "totp" && f.status === "verified");
+  if (hasMfa) redirect(`/mfa/verify?next=${encodeURIComponent(next)}`);
+  redirect(next);
 }
 
 export async function signUp(_: ActionState | null, fd: FormData): Promise<ActionState> {
@@ -70,7 +76,10 @@ export async function signUp(_: ActionState | null, fd: FormData): Promise<Actio
     },
   });
   if (error) return { error: authError(error.message) };
-  if (data.session) redirect(next);
+  if (data.session) {
+    await markSessionActive();
+    redirect(next);
+  }
   return {
     ok: true,
     message: `أرسلنا رابط تفعيل الحساب إلى ${parsed.data.email}. افتح الرابط لإكمال التسجيل.`,
@@ -94,10 +103,23 @@ export async function updatePassword(_: ActionState | null, fd: FormData): Promi
     .refine((v) => v.password === v.confirm, { message: "كلمتا المرور غير متطابقتين." })
     .safeParse({ password: fd.get("password"), confirm: fd.get("confirm") });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const user = await getSessionUser();
+  if (!user) return { error: "انتهت صلاحية الرابط. اطلب رابطاً جديداً." };
+  // من فعّل المصادقة بخطوتين يُدخل الرمز أولاً: رابط البريد وحده لا يكفي لتغيير كلمة المرور
+  if (user.mfa === "verify") redirect("/mfa/verify?next=/reset-password");
   const supabase = await createClient();
-  const { data: u } = await supabase.auth.getUser();
-  if (!u.user) return { error: "انتهت صلاحية الرابط. اطلب رابطاً جديداً." };
   const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
   if (error) return { error: authError(error.message) };
+  // كلمة المرور القديمة ربما تسربت: أغلق الجلسات الأخرى
+  await supabase.auth.signOut({ scope: "others" });
+  after(() =>
+    sendMail({
+      to: user.email,
+      subject: "تنبيه أمني: تغيّرت كلمة المرور",
+      heading: "تغيّرت كلمة مرور حسابك",
+      lines: ["سُجّل خروجك من كل الأجهزة الأخرى.", "إن لم تكن أنت، اطلب رابط تعيين جديد فوراً وتواصل مع المكتب."],
+      action: { label: "افتح حسابك", path: "/account#security" },
+    }),
+  );
   redirect("/account");
 }

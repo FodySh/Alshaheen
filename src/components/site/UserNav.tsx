@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getSessionUser, isStaff } from "@/lib/auth";
+import { getSessionUser, hasStaffRole } from "@/lib/auth";
 
 export async function UserNav() {
   const user = await getSessionUser();
@@ -15,9 +15,16 @@ export async function UserNav() {
       </div>
     );
   }
+  if (user.mfa === "verify") {
+    return (
+      <Link href="/mfa/verify" className="btn btn-secondary btn-sm">
+        أكمل الدخول
+      </Link>
+    );
+  }
   return (
     <div className="flex items-center gap-1">
-      {isStaff(user) && (
+      {hasStaffRole(user) && (
         <Link href="/dashboard" className="btn btn-secondary btn-sm">
           لوحة المكتب
         </Link>

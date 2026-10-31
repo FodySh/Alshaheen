@@ -1,6 +1,6 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
-import { safeNext } from "@/lib/auth";
+import { markSessionActive, safeNext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 /** يستقبل روابط البريد: تفعيل الحساب وتعيين كلمة المرور. */
@@ -20,5 +20,6 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     ok = !error;
   }
+  if (ok) await markSessionActive();
   return NextResponse.redirect(new URL(ok ? next : "/login?error=link", origin));
 }

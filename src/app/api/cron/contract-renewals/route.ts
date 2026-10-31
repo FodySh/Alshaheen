@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { CONTRACT_KIND_LABEL, CONTRACT_RENEWAL_DAYS } from "@/lib/constants";
 import { officeEmail, sendMail } from "@/lib/email";
@@ -9,9 +10,16 @@ import type { ContractRequest } from "@/lib/types";
  * مهمة يومية (Vercel Cron): تنبيه تجديد عقود الإيجار قبل انتهائها بـ60 يوماً.
  * آمنة للتكرار: كل عقد يُنبَّه مرة واحدة، ويُعاد التنبيه فقط إذا وُثّق عقد جديد.
  */
+/** مقارنة بزمن ثابت حتى لا يُستنتج السر من زمن الرد */
+function sameSecret(given: string | null, expected: string) {
+  const a = createHash("sha256").update(given ?? "").digest();
+  const b = createHash("sha256").update(`Bearer ${expected}`).digest();
+  return timingSafeEqual(a, b);
+}
+
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
-  if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!secret || !sameSecret(request.headers.get("authorization"), secret)) {
     return new Response("Unauthorized", { status: 401 });
   }
   const admin = createAdminClient();

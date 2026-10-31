@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ComplaintForm } from "@/components/forms/ComplaintForm";
-import { getSessionUser } from "@/lib/auth";
+import { getViewer } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "الشكاوى والملاحظات" };
 
@@ -22,6 +22,6 @@ export default function ComplaintsPage() {
 }
 
 async function Prefilled() {
-  const u = await getSessionUser();
+  const u = await getViewer();
   return <ComplaintForm name={u?.profile.full_name} phone={u?.profile.phone} email={u?.email ?? ""} />;
 }

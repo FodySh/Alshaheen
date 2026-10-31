@@ -3,8 +3,11 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { CancelBookingButton } from "@/components/account/CancelBookingButton";
 import { ProfileForm } from "@/components/account/ProfileForm";
+import { DisableMfaForm } from "@/components/auth/MfaForms";
+import { SubmitButton } from "@/components/forms/SubmitButton";
 import { StatusBadge } from "@/components/StatusBadge";
-import { isStaff, requireUser } from "@/lib/auth";
+import { signOutEverywhere } from "@/lib/actions/mfa";
+import { hasStaffRole, requireUser } from "@/lib/auth";
 import {
   CONTRACT_KIND_LABEL,
   CONTRACT_STATUS_LABEL,
@@ -101,7 +104,7 @@ async function Account() {
           <p className="mt-1 text-ink-soft">أهلاً {user.profile.full_name || "بك"}</p>
         </div>
         <div className="flex gap-2">
-          {isStaff(user) && <Link href="/dashboard" className="btn btn-secondary btn-sm">لوحة المكتب</Link>}
+          {hasStaffRole(user) && <Link href="/dashboard" className="btn btn-secondary btn-sm">لوحة المكتب</Link>}
           <form action="/auth/signout" method="post">
             <button className="btn btn-quiet btn-sm" type="submit">تسجيل الخروج</button>
           </form>
@@ -236,6 +239,40 @@ async function Account() {
       <Block id="profile" title="بياناتي">
         <div className="panel p-5">
           <ProfileForm fullName={user.profile.full_name} phone={user.profile.phone} email={user.email} />
+        </div>
+      </Block>
+
+      <Block id="security" title="الأمان">
+        <div className="panel grid gap-5 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold">المصادقة بخطوتين</p>
+              <p className="mt-1 text-sm text-ink-soft">
+                {user.hasMfa
+                  ? "مفعّلة: يُطلب رمز من تطبيق المصادقة عند كل دخول."
+                  : hasStaffRole(user)
+                    ? "إلزامية لفريق المكتب. فعّلها لفتح لوحة المكتب."
+                    : "غير مفعّلة. فعّلها ليُطلب رمز من جوالك مع كلمة المرور."}
+              </p>
+            </div>
+            {user.hasMfa ? (
+              <StatusBadge tone="olive">مفعّلة</StatusBadge>
+            ) : (
+              <Link href="/mfa/setup?next=/account%23security" className="btn btn-secondary btn-sm">فعّل الآن</Link>
+            )}
+          </div>
+          {user.hasMfa && !hasStaffRole(user) && <DisableMfaForm />}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-sand-deep pt-5">
+            <div>
+              <p className="font-semibold">الأجهزة المسجلة</p>
+              <p className="mt-1 text-sm text-ink-soft">
+                تنتهي الجلسة تلقائياً بعد فترة خمول. إن دخلت من جهاز لا تملكه، أنهِ كل الجلسات.
+              </p>
+            </div>
+            <form action={signOutEverywhere}>
+              <SubmitButton className="btn btn-quiet btn-sm text-danger" pendingLabel="جارٍ الخروج…">اخرج من كل الأجهزة</SubmitButton>
+            </form>
+          </div>
         </div>
       </Block>
     </div>
