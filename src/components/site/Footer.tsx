@@ -6,12 +6,12 @@ import { RoshanMark } from "../brand/Roshan";
 export async function Footer() {
   const s = await getOfficeSettings();
   return (
-    <footer className="mt-24 border-t border-sand-deep bg-sand/60">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="mt-20 border-t border-sand-deep bg-sand">
+      <div className="mx-auto grid max-w-[1280px] gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-10">
         <div className="lg:col-span-2">
           <div className="flex items-center gap-3">
             <RoshanMark className="h-10 w-auto" />
-            <p className="font-display text-xl font-bold">{s.office_name}</p>
+            <p className="font-brand text-xl font-bold">{s.office_name}</p>
           </div>
           <p className="mt-4 max-w-md text-sm leading-7 text-ink-soft">
             {s.about ?? "نسوّق عقارات جدة ونديرها: بيع وإيجار للسكني والتجاري والأراضي والعمائر."}

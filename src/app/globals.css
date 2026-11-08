@@ -25,6 +25,8 @@
 
   --font-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
   --font-display: "Reem Kufi", "IBM Plex Sans Arabic", sans-serif;
+  /* خط الشعار ثابت في كل الصفحات */
+  --font-brand: "Reem Kufi", "IBM Plex Sans Arabic", sans-serif;
 
   --radius-card: 0.5rem;
   --radius-control: 0.375rem;
@@ -526,5 +528,102 @@ h3 {
       animation-timeline: view();
       animation-range: entry 0% entry 70%;
     }
+  }
+}
+
+/* =====================================================================
+   هوية الموقع العام (DESIGN.md): سوق عقارات تقوده الصور على أرضية بيضاء،
+   بلون المكتب الأخضر للنداء فقط. تُطبَّق داخل .theme-public (تخطيط الموقع)
+   بإعادة تعريف المتغيرات، فتتبنّاها المكونات المشتركة، وتبقى لوحة المكتب كما هي.
+   ===================================================================== */
+.theme-public {
+  --color-paper: #ffffff;
+  --color-sand: #f7f7f7;
+  --color-sand-deep: #dddddd;
+  --color-stone: #c1c1c1;
+  --color-ink: #222222;
+  --color-ink-soft: #6a6a6a;
+  --color-olive: #4e5f2c;
+  --color-olive-deep: #3c4a21;
+  /* أفتح من لوحة المكتب حتى يبقى النص الثانوي فوقه بتباين AA */
+  --color-olive-tint: #eef1e6;
+  --font-sans: "Readex Pro", system-ui, sans-serif;
+  --font-display: "Readex Pro", system-ui, sans-serif;
+  --radius-control: 0.5rem;
+  --radius-card: 0.875rem;
+  --shadow-air: 0 0 0 1px rgb(0 0 0 / 0.02), 0 2px 6px rgb(0 0 0 / 0.04), 0 4px 8px rgb(0 0 0 / 0.1);
+  background: #fff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: 1.75;
+}
+
+@layer components {
+  .theme-public .btn {
+    min-height: 3rem;
+    padding-inline: 1.5rem;
+    font-weight: 500;
+    font-size: 1rem;
+  }
+  .theme-public .btn-sm {
+    min-height: 2.5rem;
+    padding-inline: 1rem;
+    font-size: 0.9rem;
+  }
+  .theme-public .btn-secondary {
+    border-color: var(--color-ink);
+    background: #fff;
+  }
+  .theme-public .btn-secondary:hover:not(:disabled) {
+    background: var(--color-sand);
+    border-color: var(--color-ink);
+  }
+  .theme-public .btn-quiet {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .theme-public .btn-quiet:hover:not(:disabled) {
+    background: var(--color-sand);
+  }
+  .theme-public .field {
+    min-height: 3.25rem;
+    padding: 0.75rem;
+  }
+  .theme-public .field:hover {
+    border-color: var(--color-ink);
+  }
+  .theme-public .field:focus {
+    border-color: var(--color-ink);
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+  .theme-public .label {
+    font-weight: 500;
+  }
+  .theme-public select.field {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23222222' stroke-width='1.6'/%3E%3C/svg%3E");
+  }
+}
+
+/* خارج الطبقات لتغلب القواعد العامة وحركة البطاقات */
+.theme-public :focus-visible {
+  outline-color: var(--color-ink);
+}
+/* أوزان العناوين معتدلة: الصور هي التي تحمل الثقل البصري */
+.theme-public :is(h1, h2, h3).font-bold {
+  font-weight: 600;
+}
+/* البطاقة بلا رفع ولا ظل: الصورة وحدها تتفاعل */
+.theme-public .listing-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+.theme-public .listing-card:hover .card-media {
+  transform: scale(1.03);
+}
+/* شريط الحجز السفلي على الجوال يحتاج مساحة تحت التذييل */
+@media (width < 64rem) {
+  .theme-public:has(.mobile-book-bar) {
+    padding-bottom: 76px;
   }
 }
