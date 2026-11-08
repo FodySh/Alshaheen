@@ -85,3 +85,56 @@ export const ChevronLeftIcon = ({ className }: P) => (
     <path d="m15 6-6 6 6 6" />
   </svg>
 );
+export const ShareIcon = ({ className }: P) => (
+  <svg {...base(className)}>
+    <path d="M12 15V3M8 7l4-4 4 4" />
+    <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
+  </svg>
+);
+export const GridIcon = ({ className }: P) => (
+  <svg {...base(className)}>
+    <rect x="4" y="4" width="6.5" height="6.5" rx="1" />
+    <rect x="13.5" y="4" width="6.5" height="6.5" rx="1" />
+    <rect x="4" y="13.5" width="6.5" height="6.5" rx="1" />
+    <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1" />
+  </svg>
+);
+export const HomeIcon = ({ className }: P) => (
+  <svg {...base(className)}>
+    <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1Z" />
+  </svg>
+);
+export const TagIcon = ({ className }: P) => (
+  <svg {...base(className)}>
+    <path d="M3.5 12.5V5a1.5 1.5 0 0 1 1.5-1.5h7.5l8 8a1.5 1.5 0 0 1 0 2.1l-6.4 6.4a1.5 1.5 0 0 1-2.1 0Z" />
+    <circle cx="8.5" cy="8.5" r="1.5" />
+  </svg>
+);
+export const ClockIcon = ({ className }: P) => (
+  <svg {...base(className)}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7.5V12l3 2" />
+  </svg>
+);
+export const RoadIcon = ({ className }: P) => (
+  <svg {...base(className)}>
+    <path d="M8 3 5 21M16 3l3 18M12 4v2.5M12 10.5v3M12 17.5V20" />
+  </svg>
+);
+export const CompassIcon = ({ className }: P) => (
+  <svg {...base(className)}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="m15.5 8.5-2 5-5 2 2-5Z" />
+  </svg>
+);
+export const HashIcon = ({ className }: P) => (
+  <svg {...base(className)}>
+    <path d="M9.5 4 8 20M16 4l-1.5 16M4.5 9h16M3.5 15h16" />
+  </svg>
+);
+export const ShieldIcon = ({ className }: P) => (
+  <svg {...base(className)}>
+    <path d="M12 3 5 6v5.5c0 4.3 2.9 8 7 9.5 4.1-1.5 7-5.2 7-9.5V6Z" />
+    <path d="m9 12 2 2 4-4" />
+  </svg>
+);

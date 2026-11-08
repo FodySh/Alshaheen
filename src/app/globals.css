@@ -528,3 +528,88 @@ h3 {
     }
   }
 }
+
+/* =====================================================================
+   تصميم تجريبي (DESIGN.md): سوق عقارات تقوده الصور على أرضية بيضاء.
+   يُطبَّق داخل .theme-air فقط، بإعادة تعريف متغيرات الألوان والخط،
+   فتتبنّاه المكونات الحالية (الأزرار، الحقول، الحجز) دون نسخها.
+   ===================================================================== */
+.theme-air {
+  --color-paper: #ffffff;
+  --color-sand: #f7f7f7;
+  --color-sand-deep: #dddddd;
+  --color-stone: #c1c1c1;
+  --color-ink: #222222;
+  --color-ink-soft: #6a6a6a;
+  --color-olive: #e00b41;
+  --color-olive-deep: #c20a37;
+  --color-olive-tint: #fff0f3;
+  --color-clay: #c13515;
+  --color-clay-tint: #fdeeea;
+  --font-sans: "Readex Pro", system-ui, sans-serif;
+  --font-display: "Readex Pro", system-ui, sans-serif;
+  --radius-control: 0.5rem;
+  --radius-card: 0.875rem;
+  --shadow-air: 0 0 0 1px rgb(0 0 0 / 0.02), 0 2px 6px rgb(0 0 0 / 0.04), 0 4px 8px rgb(0 0 0 / 0.1);
+  background: #fff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: 1.75;
+}
+/* المقارنة بلون المكتب مع نفس التخطيط */
+.theme-air[data-accent="brand"] {
+  --color-olive: #4e5f2c;
+  --color-olive-deep: #3c4a21;
+  --color-olive-tint: #e6ead8;
+}
+
+@layer components {
+  .theme-air .btn {
+    min-height: 3rem;
+    padding-inline: 1.5rem;
+    font-weight: 500;
+    font-size: 1rem;
+  }
+  .theme-air .btn-sm {
+    min-height: 2.5rem;
+    padding-inline: 1rem;
+    font-size: 0.9rem;
+  }
+  .theme-air .btn-secondary {
+    border-color: var(--color-ink);
+    background: #fff;
+  }
+  .theme-air .btn-secondary:hover:not(:disabled) {
+    background: var(--color-sand);
+    border-color: var(--color-ink);
+  }
+  .theme-air .btn-quiet {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .theme-air .btn-quiet:hover:not(:disabled) {
+    background: var(--color-sand);
+  }
+  .theme-air .field {
+    min-height: 3.25rem;
+    padding: 0.75rem;
+  }
+  .theme-air .field:hover {
+    border-color: var(--color-ink);
+  }
+  .theme-air .field:focus {
+    border-color: var(--color-ink);
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+  .theme-air .label {
+    font-weight: 500;
+  }
+  .theme-air .panel {
+    border-color: var(--color-sand-deep);
+  }
+}
+/* حلقة التركيز بالحبر (خارج الطبقات لتغلب القاعدة العامة) */
+.theme-air :focus-visible {
+  outline-color: var(--color-ink);
+}

@@ -13,7 +13,8 @@ export default function ComplaintsPage() {
         اكتب شكواك أو ملاحظتك على أي عرض أو تعامل مع المكتب. تحصل على رقم للشكوى فور إرسالها، ونتواصل معك على رقم جوالك. إن كان لديك حساب فتابع حالتها من صفحة حسابك.
       </p>
       <div className="panel mt-8 p-5 sm:p-8">
-        <Suspense fallback={<ComplaintForm />}>
+        {/* هيكل غير تفاعلي: لو كان نموذجاً فارغاً لمُسح ما يكتبه الزائر عند وصول النسخة المعبأة */}
+        <Suspense fallback={<div className="h-[32rem] animate-pulse rounded-md bg-sand/60" aria-hidden />}>
           <Prefilled />
         </Suspense>
       </div>

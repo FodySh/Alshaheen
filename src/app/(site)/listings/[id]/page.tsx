@@ -3,15 +3,12 @@ import Link from "next/link";
 import { FactList } from "@/components/FactList";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { BookingPicker, type SlotView } from "@/components/listings/BookingPicker";
 import { Gallery } from "@/components/listings/Gallery";
-import { InquiryForm } from "@/components/listings/InquiryForm";
+import { BookingSection, InquirySection } from "@/components/listings/ListingEngagement";
 import { CalendarIcon, ChatIcon, PhoneIcon, PinIcon, WhatsAppIcon } from "@/components/icons";
-import { getViewer } from "@/lib/auth";
 import { PROPERTY_TYPE_LABEL, PURPOSE_LABEL, fieldsFor } from "@/lib/constants";
 import { getLiveListing, getOfficeSettings } from "@/lib/data/public";
-import { formatArea, formatDay, formatNumber, formatPlainDate, formatPrice, formatTime, riyadhDayKey, whatsappLink } from "@/lib/format";
-import { createClient } from "@/lib/supabase/server";
+import { formatArea, formatNumber, formatPlainDate, formatPrice, whatsappLink } from "@/lib/format";
 import { publicImageUrl } from "@/lib/supabase/env";
 
 type Params = Promise<{ id: string }>;
@@ -159,7 +156,7 @@ async function ListingDetail({ params }: { params: Params }) {
             </h2>
             <div className="mt-4">
               <Suspense fallback={<div className="h-40 animate-pulse rounded bg-sand/60" />}>
-                <BookingSection listingId={l.id} />
+                <BookingSection listingId={l.id} returnTo={`/listings/${l.id}`} />
               </Suspense>
             </div>
           </section>
@@ -170,7 +167,7 @@ async function ListingDetail({ params }: { params: Params }) {
             </h2>
             <div className="mt-4">
               <Suspense fallback={<div className="h-32 animate-pulse rounded bg-sand/60" />}>
-                <InquirySection listingId={l.id} />
+                <InquirySection listingId={l.id} returnTo={`/listings/${l.id}`} />
               </Suspense>
             </div>
           </section>
@@ -178,39 +175,6 @@ async function ListingDetail({ params }: { params: Params }) {
       </div>
     </div>
   );
-}
-
-function LoginPrompt({ listingId, action }: { listingId: string; action: string }) {
-  const next = encodeURIComponent(`/listings/${listingId}`);
-  return (
-    <div className="grid gap-3">
-      <p className="text-sm leading-7 text-ink-soft">سجّل الدخول {action}. يستغرق إنشاء الحساب دقيقة.</p>
-      <div className="grid grid-cols-2 gap-2">
-        <Link href={`/login?next=${next}`} className="btn btn-primary btn-sm">دخول</Link>
-        <Link href={`/register?next=${next}`} className="btn btn-secondary btn-sm">حساب جديد</Link>
-      </div>
-    </div>
-  );
-}
-
-async function BookingSection({ listingId }: { listingId: string }) {
-  const user = await getViewer();
-  if (!user) return <LoginPrompt listingId={listingId} action="لترى المواعيد المتاحة وتحجز" />;
-  const supabase = await createClient();
-  const { data } = await supabase.rpc("available_slots", { p_listing: listingId });
-  const slots: SlotView[] = ((data ?? []) as { slot_id: string; starts_at: string }[]).map((s) => ({
-    slot_id: s.slot_id,
-    day: riyadhDayKey(s.starts_at),
-    dayLabel: formatDay(s.starts_at),
-    time: formatTime(s.starts_at),
-  }));
-  return <BookingPicker listingId={listingId} slots={slots} />;
-}
-
-async function InquirySection({ listingId }: { listingId: string }) {
-  const user = await getViewer();
-  if (!user) return <LoginPrompt listingId={listingId} action="لترسل استفسارك ويصلك الرد" />;
-  return <InquiryForm listingId={listingId} />;
 }
 
 function DetailSkeleton() {
