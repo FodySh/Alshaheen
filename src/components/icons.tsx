@@ -138,3 +138,16 @@ export const ShieldIcon = ({ className }: P) => (
     <path d="m9 12 2 2 4-4" />
   </svg>
 );
+export const SearchIcon = ({ className }: P) => (
+  <svg {...base(className)}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m20 20-4.4-4.4" />
+  </svg>
+);
+export const SlidersIcon = ({ className }: P) => (
+  <svg {...base(className)}>
+    <path d="M4 7h10M18 7h2M4 17h2M10 17h10" />
+    <circle cx="16" cy="7" r="2" />
+    <circle cx="8" cy="17" r="2" />
+  </svg>
+);

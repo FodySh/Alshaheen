@@ -1,21 +1,26 @@
 import Link from "next/link";
 import type { ListingCardData } from "@/lib/data/public";
-import { PROPERTY_TYPE_LABEL, PURPOSE_LABEL } from "@/lib/constants";
-import { formatArea, formatNumber, formatPrice } from "@/lib/format";
+import { PROPERTY_TYPE_LABEL, PURPOSE_LABEL, RENT_PERIOD_LABEL } from "@/lib/constants";
+import { formatArea, formatNumber } from "@/lib/format";
 import { publicImageUrl } from "@/lib/supabase/env";
-import { AreaIcon, BathIcon, BedIcon, PinIcon } from "../icons";
 import { RoshanMark } from "../brand/Roshan";
 
-/** reveal: ترتيب البطاقة في صفها، يفعّل حركة الظهور المتتابع */
+/** بطاقة عرض تقودها الصورة. reveal: ترتيب البطاقة في صفها، يفعّل حركة الظهور المتتابع */
 export function ListingCard({ l, reveal }: { l: ListingCardData; reveal?: number }) {
   const img = publicImageUrl(l.cover_image_path);
+  const meta = [
+    l.bedrooms !== null ? `${formatNumber(l.bedrooms)} غرف` : null,
+    l.bathrooms !== null ? `${formatNumber(l.bathrooms)} دورات مياه` : null,
+    formatArea(l.area_sqm),
+  ].filter(Boolean);
+  const period = l.purpose === "rent" && l.rent_period ? RENT_PERIOD_LABEL[l.rent_period] : null;
   return (
     <Link
       href={`/listings/${l.id}`}
       style={reveal !== undefined ? ({ "--i": reveal } as React.CSSProperties) : undefined}
-      className={`listing-card group flex flex-col overflow-hidden rounded-lg border border-sand-deep bg-white hover:border-stone focus-visible:outline-offset-4 ${reveal !== undefined ? "motion-reveal" : ""}`}
+      className={`listing-card group block rounded-[14px] focus-visible:outline-offset-4 ${reveal !== undefined ? "motion-reveal" : ""}`}
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-sand">
+      <div className="relative aspect-[20/19] overflow-hidden rounded-[14px] bg-sand">
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={img} alt="" loading="lazy" className="card-media size-full object-cover" />
@@ -24,36 +29,22 @@ export function ListingCard({ l, reveal }: { l: ListingCardData; reveal?: number
             <RoshanMark className="card-mark h-14 w-auto" />
           </div>
         )}
-        <span className="card-tag absolute start-3 top-3 rounded bg-paper px-2 py-0.5 text-xs font-semibold text-ink">
+        <span className="card-tag absolute start-3 top-3 rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink shadow-[var(--shadow-air)]">
           {PURPOSE_LABEL[l.purpose]}
         </span>
       </div>
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <p className="num text-lg font-bold text-olive-deep">{formatPrice(l.price, l.rent_period)}</p>
-        <h3 className="line-clamp-2 font-semibold leading-7">
-          <span className="card-title">{l.title}</span>
+      <div className="mt-3 text-[0.95rem] leading-6">
+        <h3 className="font-semibold">
+          <span className="card-title">
+            {PROPERTY_TYPE_LABEL[l.property_type]} في {l.district}
+          </span>
         </h3>
-        <p className="flex items-center gap-1.5 text-sm text-ink-soft">
-          <PinIcon className="size-4 shrink-0" />
-          {l.district}
-          <span className="text-stone" aria-hidden>|</span>
-          {PROPERTY_TYPE_LABEL[l.property_type]}
+        <p className="line-clamp-1 text-ink-soft">{l.title}</p>
+        <p className="num text-ink-soft">{meta.join(" · ")}</p>
+        <p className="mt-1.5">
+          <span className="num font-semibold">{formatNumber(l.price)} ريال</span>
+          {period && <span className="text-ink-soft"> {period}</span>}
         </p>
-        <ul className="mt-auto flex flex-wrap gap-x-4 gap-y-1 border-t border-sand pt-3 text-sm text-ink-soft">
-          {l.bedrooms !== null && (
-            <li className="flex items-center gap-1.5">
-              <BedIcon /> <span className="num">{formatNumber(l.bedrooms)}</span> غرف
-            </li>
-          )}
-          {l.bathrooms !== null && (
-            <li className="flex items-center gap-1.5">
-              <BathIcon /> <span className="num">{formatNumber(l.bathrooms)}</span> دورات مياه
-            </li>
-          )}
-          <li className="flex items-center gap-1.5">
-            <AreaIcon /> <span className="num">{formatArea(l.area_sqm)}</span>
-          </li>
-        </ul>
       </div>
     </Link>
   );
